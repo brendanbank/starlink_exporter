@@ -78,12 +78,21 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishMobilityClass
 	ch <- userClassOfService
 	ch <- dishReadyState
+	ch <- dishInitializationDurationSeconds
 	ch <- dishInfo
 	ch <- SoftwarePartitionsEqual
+	ch <- dishSoftwareUpdateState
+	ch <- dishDisablementCode
 	ch <- dishIsDev
 	ch <- dishBootCount
 	ch <- dishAntiRollbackVersion
 	ch <- dishIsHit
+
+	// Quaternion
+	ch <- dishNed2dishQuaternionQScalar
+	ch <- dishNed2dishQuaternionQX
+	ch <- dishNed2dishQuaternionQY
+	ch <- dishNed2dishQuaternionQZ
 
 	// BootInfo
 	ch <- dishBootInfo
@@ -120,6 +129,11 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishSnrPersistentlyLow
 
 	// DishAlerts
+	ch <- dishPowerSupplyThermalThrottle
+	ch <- dishIsPowerSaveIdle
+	ch <- dishLowMotorCurrent
+	ch <- dishLowerSignalThanPredicted
+	ch <- dishObstructionMapReset
 	ch <- dishAlertRoaming
 	ch <- dishAlertMotorsStuck
 	ch <- dishAlertThermalThrottle
@@ -137,7 +151,9 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishTiltAngleDeg
 
 	// DishObstructions
+	ch <- dishPatchesValid
 	ch <- dishCurrentlyObstructed
+	ch <- dishTimeObstructed
 	ch <- dishFractionObstructionRatio
 	ch <- dishValidSeconds
 	ch <- dishProlongedObstructionDurationSeconds
@@ -145,6 +161,17 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishProlongedObstructionValid
 	ch <- dishWedgeFractionObstructionRatio
 	ch <- dishWedgeAbsFractionObstructionRatio
+	ch <- dishObstructionMap
+
+	// DishLocation
+	ch <- dishLocationInfo
+
+	// Diagnostics
+	ch <- dishGpsTimeS
+
+	// Power
+	ch <- dishPowerWatt
+	ch <- dishPowerWattAvg15min
 }
 
 // Collect fetches the stats from Starlink dish and delivers them as Prometheus metrics.
@@ -162,11 +189,11 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	if ok {
 		ch <- prometheus.MustNewConstMetric(
-			dishUp, prometheus.GaugeValue, 1.0,
+			dishUp, prometheus.GaugeValue, 1.0, e.DishID,
 		)
 	} else {
 		ch <- prometheus.MustNewConstMetric(
-			dishUp, prometheus.GaugeValue, 0.0,
+			dishUp, prometheus.GaugeValue, 0.0, e.DishID,
 		)
 	}
 }
@@ -195,19 +222,20 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	dishQuaternion := dishStatus.GetNed2DishQuaternion()
 
 	ch <- prometheus.MustNewConstMetric(
-		dishNed2dishQuaternionQScalar, prometheus.GaugeValue, float64(dishQuaternion.QScalar))
+		dishNed2dishQuaternionQScalar, prometheus.GaugeValue, float64(dishQuaternion.QScalar), e.DishID)
 
 	ch <- prometheus.MustNewConstMetric(
-		dishNed2dishQuaternionQX, prometheus.GaugeValue, float64(dishQuaternion.QX))
+		dishNed2dishQuaternionQX, prometheus.GaugeValue, float64(dishQuaternion.QX), e.DishID)
 
 	ch <- prometheus.MustNewConstMetric(
-		dishNed2dishQuaternionQY, prometheus.GaugeValue, float64(dishQuaternion.QY))
+		dishNed2dishQuaternionQY, prometheus.GaugeValue, float64(dishQuaternion.QY), e.DishID)
 
 	ch <- prometheus.MustNewConstMetric(
-		dishNed2dishQuaternionQZ, prometheus.GaugeValue, float64(dishQuaternion.QZ))
+		dishNed2dishQuaternionQZ, prometheus.GaugeValue, float64(dishQuaternion.QZ), e.DishID)
 
 	ch <- prometheus.MustNewConstMetric(
 		dishInitializationDurationSeconds, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		fmt.Sprint(dishInit.GetAttitudeInitialization()),
 		fmt.Sprint(dishInit.GetBurstDetected()),
 		fmt.Sprint(dishInit.GetEkfConverged()),
@@ -222,6 +250,7 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishReadyState, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		fmt.Sprint(dishR.GetCady()),
 		fmt.Sprint(dishR.GetScp()),
 		fmt.Sprint(dishR.GetL1L2()),
@@ -231,9 +260,11 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		userClassOfService, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		dishStatus.GetClassOfService().String())
 	ch <- prometheus.MustNewConstMetric(
 		dishMobilityClass, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		dishStatus.GetMobilityClass().String())
 	ch <- prometheus.MustNewConstMetric(
 		dishInfo, prometheus.GaugeValue, 1.00,
@@ -247,82 +278,84 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 		fmt.Sprint(dishI.GetUtcOffsetS()),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		SoftwarePartitionsEqual, prometheus.GaugeValue, flool(dishI.GetSoftwarePartitionsEqual()),
+		SoftwarePartitionsEqual, prometheus.GaugeValue, flool(dishI.GetSoftwarePartitionsEqual()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishSoftwareUpdateState, prometheus.GaugeValue, 1.00, dishStatus.GetSoftwareUpdateState().String(),
+		dishSoftwareUpdateState, prometheus.GaugeValue, 1.00, e.DishID, dishStatus.GetSoftwareUpdateState().String(),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishDisablementCode, prometheus.GaugeValue, 1.00, dishStatus.GetDisablementCode().String(),
+		dishDisablementCode, prometheus.GaugeValue, 1.00, e.DishID, dishStatus.GetDisablementCode().String(),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishIsDev, prometheus.GaugeValue, flool(dishI.GetIsDev()),
+		dishIsDev, prometheus.GaugeValue, flool(dishI.GetIsDev()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishBootCount, prometheus.CounterValue, float64(dishI.GetBootcount()),
+		dishBootCount, prometheus.CounterValue, float64(dishI.GetBootcount()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAntiRollbackVersion, prometheus.CounterValue, float64(dishI.GetAntiRollbackVersion()),
+		dishAntiRollbackVersion, prometheus.CounterValue, float64(dishI.GetAntiRollbackVersion()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishIsHit, prometheus.GaugeValue, flool(dishI.GetIsHitl()),
+		dishIsHit, prometheus.GaugeValue, flool(dishI.GetIsHitl()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishBootInfo, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		fmt.Sprint(dishB.GetCountByReason()),
 		fmt.Sprint(dishB.GetCountByReasonDelta()),
 		fmt.Sprint(dishB.GetLastReason()),
 		fmt.Sprint(dishB.GetLastCount()),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishUptimeSeconds, prometheus.CounterValue, float64(dishS.GetUptimeS()),
+		dishUptimeSeconds, prometheus.CounterValue, float64(dishS.GetUptimeS()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishOutage, prometheus.GaugeValue, float64(dishO.GetDurationNs()),
+		e.DishID,
 		fmt.Sprint(dishO.GetStartTimestampNs()),
 		dishO.GetCause().String(),
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishOutageDidSwitch, prometheus.GaugeValue, flool(dishO.GetDidSwitch()),
+		dishOutageDidSwitch, prometheus.GaugeValue, flool(dishO.GetDidSwitch()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishGpsValid, prometheus.GaugeValue, flool(dishG.GetGpsValid()),
+		dishGpsValid, prometheus.GaugeValue, flool(dishG.GetGpsValid()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishGpsSats, prometheus.GaugeValue, float64(dishG.GetGpsSats()),
+		dishGpsSats, prometheus.GaugeValue, float64(dishG.GetGpsSats()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishSecondsToFirstNonemptySlot, prometheus.GaugeValue, float64(dishStatus.GetSecondsToFirstNonemptySlot()),
+		dishSecondsToFirstNonemptySlot, prometheus.GaugeValue, float64(dishStatus.GetSecondsToFirstNonemptySlot()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishPopPingDropRatio, prometheus.GaugeValue, float64(dishStatus.GetPopPingDropRate()),
+		dishPopPingDropRatio, prometheus.GaugeValue, float64(dishStatus.GetPopPingDropRate()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishDownlinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetDownlinkThroughputBps()),
+		dishDownlinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetDownlinkThroughputBps()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishUplinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetUplinkThroughputBps()),
+		dishUplinkThroughputBytes, prometheus.GaugeValue, float64(dishStatus.GetUplinkThroughputBps()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishPopPingLatencySeconds, prometheus.GaugeValue, float64(dishStatus.GetPopPingLatencyMs()/1000),
+		dishPopPingLatencySeconds, prometheus.GaugeValue, float64(dishStatus.GetPopPingLatencyMs()/1000), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishStowRequested, prometheus.GaugeValue, flool(dishStatus.GetStowRequested()),
+		dishStowRequested, prometheus.GaugeValue, flool(dishStatus.GetStowRequested()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishBoreSightAzimuthDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightAzimuthDeg()),
+		dishBoreSightAzimuthDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightAzimuthDeg()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishBoreSightElevationDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightElevationDeg()),
+		dishBoreSightElevationDeg, prometheus.GaugeValue, float64(dishStatus.GetBoresightElevationDeg()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishEthSpeedMbps, prometheus.UntypedValue, float64(dishStatus.GetEthSpeedMbps()),
+		dishEthSpeedMbps, prometheus.UntypedValue, float64(dishStatus.GetEthSpeedMbps()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishSnrAboveNoiseFloor, prometheus.GaugeValue, flool(!dishStatus.GetIsSnrAboveNoiseFloor()),
+		dishSnrAboveNoiseFloor, prometheus.GaugeValue, flool(!dishStatus.GetIsSnrAboveNoiseFloor()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishSnrPersistentlyLow, prometheus.GaugeValue, flool(dishStatus.GetIsSnrPersistentlyLow()),
+		dishSnrPersistentlyLow, prometheus.GaugeValue, flool(dishStatus.GetIsSnrPersistentlyLow()), e.DishID,
 	)
 	// ch <- prometheus.MustNewConstMetric(
 	// 	dishPhyRxBeamSnrAvg, prometheus.GaugeValue, float64(dishStatus.GetPhyRxBeamSnrAvg()),
@@ -349,6 +382,7 @@ func (e *Exporter) collectDishConfig(ch chan<- prometheus.Metric) bool {
 	dishC := resp.GetDishGetConfig()
 	ch <- prometheus.MustNewConstMetric(
 		dishConfig, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		dishC.GetDishConfig().GetSnowMeltMode().String(),
 		dishC.GetDishConfig().GetLocationRequestMode().String(),
 		dishC.GetDishConfig().GetLevelDishMode().String(),
@@ -386,6 +420,7 @@ func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishLocationInfo, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		locationSource,
 		fmt.Sprintf("%.6f", lat),
 		fmt.Sprintf("%.6f", lon),
@@ -396,13 +431,13 @@ func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
 	)
 
 	ch <- prometheus.MustNewConstMetric(
-		dishLatitude, prometheus.GaugeValue, lat,
+		dishLatitude, prometheus.GaugeValue, lat, e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishLongitude, prometheus.GaugeValue, lon,
+		dishLongitude, prometheus.GaugeValue, lon, e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAltitude, prometheus.GaugeValue, float64(alt),
+		dishAltitude, prometheus.GaugeValue, float64(alt), e.DishID,
 	)
 
 	return true
@@ -424,28 +459,28 @@ func (e *Exporter) collectDishObstructionStatus(ch chan<- prometheus.Metric) boo
 	obstructions := resp.GetDishGetStatus().GetObstructionStats()
 
 	ch <- prometheus.MustNewConstMetric(
-		dishCurrentlyObstructed, prometheus.GaugeValue, flool(obstructions.GetCurrentlyObstructed()),
+		dishCurrentlyObstructed, prometheus.GaugeValue, flool(obstructions.GetCurrentlyObstructed()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishFractionObstructionRatio, prometheus.GaugeValue, float64(obstructions.GetFractionObstructed()),
+		dishFractionObstructionRatio, prometheus.GaugeValue, float64(obstructions.GetFractionObstructed()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishTimeObstructed, prometheus.GaugeValue, float64(obstructions.GetTimeObstructed()),
+		dishTimeObstructed, prometheus.GaugeValue, float64(obstructions.GetTimeObstructed()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishValidSeconds, prometheus.CounterValue, float64(obstructions.GetValidS()),
+		dishValidSeconds, prometheus.CounterValue, float64(obstructions.GetValidS()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishPatchesValid, prometheus.GaugeValue, float64(obstructions.GetPatchesValid()),
+		dishPatchesValid, prometheus.GaugeValue, float64(obstructions.GetPatchesValid()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishProlongedObstructionDurationSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionDurationS()),
+		dishProlongedObstructionDurationSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionDurationS()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishProlongedObstructionIntervalSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionIntervalS()),
+		dishProlongedObstructionIntervalSeconds, prometheus.GaugeValue, float64(obstructions.GetAvgProlongedObstructionIntervalS()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishProlongedObstructionValid, prometheus.GaugeValue, flool(obstructions.GetAvgProlongedObstructionValid()),
+		dishProlongedObstructionValid, prometheus.GaugeValue, flool(obstructions.GetAvgProlongedObstructionValid()), e.DishID,
 	)
 
 	return true
@@ -509,6 +544,7 @@ func (e *Exporter) collectDishObstructionMap(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishObstructionMap, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		timestamp,
 		fmt.Sprint(obstructionMap.GetNumRows()),
 		fmt.Sprint(obstructionMap.GetNumCols()),
@@ -537,7 +573,7 @@ func (e *Exporter) collectDishDiagnostics(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishGpsTimeS, prometheus.GaugeValue,
-		float64(diagnostics.GetLocation().GetGpsTimeS()),
+		float64(diagnostics.GetLocation().GetGpsTimeS()), e.DishID,
 	)
 
 	return true
@@ -558,13 +594,13 @@ func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
 	alerts := resp.GetDishGetStatus().GetAlerts()
 
 	ch <- prometheus.MustNewConstMetric(
-		dishAlertMotorsStuck, prometheus.GaugeValue, flool(alerts.GetMotorsStuck()),
+		dishAlertMotorsStuck, prometheus.GaugeValue, flool(alerts.GetMotorsStuck()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishPowerSupplyThermalThrottle, prometheus.GaugeValue, flool(alerts.GetPowerSupplyThermalThrottle()),
+		dishPowerSupplyThermalThrottle, prometheus.GaugeValue, flool(alerts.GetPowerSupplyThermalThrottle()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishIsPowerSaveIdle, prometheus.GaugeValue, flool(alerts.GetIsPowerSaveIdle()),
+		dishIsPowerSaveIdle, prometheus.GaugeValue, flool(alerts.GetIsPowerSaveIdle()), e.DishID,
 	)
 	// ch <- prometheus.MustNewConstMetric(
 	// 	dishMovingWhileNotMobile, prometheus.GaugeValue, flool(alerts.GetMovingWhileNotMobile()),
@@ -573,37 +609,37 @@ func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
 	// 	dishMovingTooFastForPolicy, prometheus.GaugeValue, flool(alerts.GetMovingTooFastForPolicy()),
 	// )
 	ch <- prometheus.MustNewConstMetric(
-		dishLowMotorCurrent, prometheus.GaugeValue, flool(alerts.GetLowMotorCurrent()),
+		dishLowMotorCurrent, prometheus.GaugeValue, flool(alerts.GetLowMotorCurrent()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishLowerSignalThanPredicted, prometheus.GaugeValue, flool(alerts.GetLowerSignalThanPredicted()),
+		dishLowerSignalThanPredicted, prometheus.GaugeValue, flool(alerts.GetLowerSignalThanPredicted()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishObstructionMapReset, prometheus.GaugeValue, flool(alerts.GetObstructionMapReset()),
+		dishObstructionMapReset, prometheus.GaugeValue, flool(alerts.GetObstructionMapReset()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAlertThermalThrottle, prometheus.GaugeValue, flool(alerts.GetThermalThrottle()),
+		dishAlertThermalThrottle, prometheus.GaugeValue, flool(alerts.GetThermalThrottle()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAlertThermalShutdown, prometheus.GaugeValue, flool(alerts.GetThermalShutdown()),
+		dishAlertThermalShutdown, prometheus.GaugeValue, flool(alerts.GetThermalShutdown()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAlertMastNotNearVertical, prometheus.GaugeValue, flool(alerts.GetMastNotNearVertical()),
+		dishAlertMastNotNearVertical, prometheus.GaugeValue, flool(alerts.GetMastNotNearVertical()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishUnexpectedLocation, prometheus.GaugeValue, flool(alerts.GetUnexpectedLocation()),
+		dishUnexpectedLocation, prometheus.GaugeValue, flool(alerts.GetUnexpectedLocation()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishSlowEthernetSpeeds, prometheus.GaugeValue, flool(alerts.GetSlowEthernetSpeeds()),
+		dishSlowEthernetSpeeds, prometheus.GaugeValue, flool(alerts.GetSlowEthernetSpeeds()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishAlertRoaming, prometheus.GaugeValue, flool(alerts.GetRoaming()),
+		dishAlertRoaming, prometheus.GaugeValue, flool(alerts.GetRoaming()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishInstallPending, prometheus.GaugeValue, flool(alerts.GetInstallPending()),
+		dishInstallPending, prometheus.GaugeValue, flool(alerts.GetInstallPending()), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishIsHeating, prometheus.GaugeValue, flool(alerts.GetIsHeating()),
+		dishIsHeating, prometheus.GaugeValue, flool(alerts.GetIsHeating()), e.DishID,
 	)
 
 	return true
@@ -625,6 +661,7 @@ func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric) bool {
 
 	ch <- prometheus.MustNewConstMetric(
 		dishAlignmentStats, prometheus.GaugeValue, 1.00,
+		e.DishID,
 		fmt.Sprint(alignmentStats.GetHasActuators()),
 		fmt.Sprint(alignmentStats.GetActuatorState()),
 		fmt.Sprint(alignmentStats.GetTiltAngleDeg()),
@@ -641,13 +678,13 @@ func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric) bool {
 	elevationDiff := alignmentStats.GetDesiredBoresightElevationDeg() - alignmentStats.GetBoresightElevationDeg()
 
 	ch <- prometheus.MustNewConstMetric(
-		dishBoresightAzimuthDiffDeg, prometheus.GaugeValue, float64(azimuthDiff),
+		dishBoresightAzimuthDiffDeg, prometheus.GaugeValue, float64(azimuthDiff), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishBoresightElevationDiffDeg, prometheus.GaugeValue, float64(elevationDiff),
+		dishBoresightElevationDiffDeg, prometheus.GaugeValue, float64(elevationDiff), e.DishID,
 	)
 	ch <- prometheus.MustNewConstMetric(
-		dishTiltAngleDeg, prometheus.GaugeValue, float64(alignmentStats.GetTiltAngleDeg()),
+		dishTiltAngleDeg, prometheus.GaugeValue, float64(alignmentStats.GetTiltAngleDeg()), e.DishID,
 	)
 
 	return true
@@ -671,7 +708,7 @@ func (e *Exporter) collectDishPower(ch chan<- prometheus.Metric) bool {
 	latest_range, _, _ := computeSampleRange(history, 1)
 	latest_index := latest_range[0]
 	ch <- prometheus.MustNewConstMetric(
-		dishPowerWatt, prometheus.GaugeValue, float64(powerHistory[latest_index]),
+		dishPowerWatt, prometheus.GaugeValue, float64(powerHistory[latest_index]), e.DishID,
 	)
 	avg := 0.0
 	for i := 0; i < len(powerHistory); i++ {
@@ -679,7 +716,7 @@ func (e *Exporter) collectDishPower(ch chan<- prometheus.Metric) bool {
 	}
 	avg /= float64(len(powerHistory))
 	ch <- prometheus.MustNewConstMetric(
-		dishPowerWattAvg15min, prometheus.GaugeValue, avg,
+		dishPowerWattAvg15min, prometheus.GaugeValue, avg, e.DishID,
 	)
 	return true
 }
