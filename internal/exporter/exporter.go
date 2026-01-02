@@ -101,6 +101,11 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishGpsValid
 	ch <- dishGpsSats
 
+	// DishLocation
+	ch <- dishLatitude
+	ch <- dishLongitude
+	ch <- dishAltitude
+
 	// DishStatus
 	ch <- dishSecondsToFirstNonemptySlot
 	ch <- dishPopPingDropRatio
@@ -374,6 +379,16 @@ func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
 		fmt.Sprintf("%.6f", sigmaM),
 		fmt.Sprintf("%.6f", horizontalSpeedMps),
 		fmt.Sprintf("%.6f", verticalSpeedMps),
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishLatitude, prometheus.GaugeValue, lat,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishLongitude, prometheus.GaugeValue, lon,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishAltitude, prometheus.GaugeValue, float64(alt),
 	)
 
 	return true

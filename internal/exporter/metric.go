@@ -40,6 +40,21 @@ var (
 			"horizontalSpeedMps",
 			"verticalSpeedMps"}, nil,
 	)
+	dishLatitude = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "latitude"),
+		"Dish Latitude",
+		nil, nil,
+	)
+	dishLongitude = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "longitude"),
+		"Dish Longitude",
+		nil, nil,
+	)
+	dishAltitude = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "altitude"),
+		"Dish Altitude",
+		nil, nil,
+	)
 
 	// DeviceInfo
 	dishInfo = prometheus.NewDesc(
