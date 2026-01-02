@@ -116,6 +116,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishBoreSightAzimuthDeg
 	ch <- dishBoreSightElevationDeg
 	ch <- dishEthSpeedMbps
+	ch <- dishSnrAboveNoiseFloor
+	ch <- dishSnrPersistentlyLow
 
 	// DishAlerts
 	ch <- dishAlertRoaming
@@ -315,6 +317,12 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishEthSpeedMbps, prometheus.UntypedValue, float64(dishStatus.GetEthSpeedMbps()),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSnrAboveNoiseFloor, prometheus.GaugeValue, flool(!dishStatus.GetIsSnrAboveNoiseFloor()),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSnrPersistentlyLow, prometheus.GaugeValue, flool(dishStatus.GetIsSnrPersistentlyLow()),
 	)
 	// ch <- prometheus.MustNewConstMetric(
 	// 	dishPhyRxBeamSnrAvg, prometheus.GaugeValue, float64(dishStatus.GetPhyRxBeamSnrAvg()),

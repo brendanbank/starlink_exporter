@@ -286,6 +286,16 @@ var (
 		"ethernet speed",
 		nil, nil,
 	)
+	dishSnrAboveNoiseFloor = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "snr_above_noise_floor"),
+		"SNR is below noise floor (1 = poor signal problem, 0 = good signal)",
+		nil, nil,
+	)
+	dishSnrPersistentlyLow = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "snr_persistently_low"),
+		"SNR is persistently low (1 = chronic problem, 0 = OK)",
+		nil, nil,
+	)
 	// DishAlerts
 	dishPowerSupplyThermalThrottle = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "alert_power_supply_thermal_throttle"),
