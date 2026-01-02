@@ -1,0 +1,16 @@
+[Unit]
+Description=Starlink Exporter
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/starlink_exporter/starlink_exporter
+Restart=on-failure
+RestartSec=10s
+User=root
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=starlink-exporter
+
+[Install]
+WantedBy=multi-user.target
