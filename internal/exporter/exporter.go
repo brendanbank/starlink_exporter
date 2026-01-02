@@ -128,6 +128,12 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishInstallPending
 	ch <- dishIsHeating
 
+	// DishAlignment
+	ch <- dishAlignmentStats
+	ch <- dishBoresightAzimuthDiffDeg
+	ch <- dishBoresightElevationDiffDeg
+	ch <- dishTiltAngleDeg
+
 	// DishObstructions
 	ch <- dishCurrentlyObstructed
 	ch <- dishFractionObstructionRatio
@@ -621,6 +627,21 @@ func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric) bool {
 		fmt.Sprint(alignmentStats.GetDesiredBoresightAzimuthDeg()),
 		fmt.Sprint(alignmentStats.GetDesiredBoresightElevationDeg()),
 	)
+
+	// Calculate difference between desired and actual boresight angles
+	azimuthDiff := alignmentStats.GetDesiredBoresightAzimuthDeg() - alignmentStats.GetBoresightAzimuthDeg()
+	elevationDiff := alignmentStats.GetDesiredBoresightElevationDeg() - alignmentStats.GetBoresightElevationDeg()
+
+	ch <- prometheus.MustNewConstMetric(
+		dishBoresightAzimuthDiffDeg, prometheus.GaugeValue, float64(azimuthDiff),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishBoresightElevationDiffDeg, prometheus.GaugeValue, float64(elevationDiff),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishTiltAngleDeg, prometheus.GaugeValue, float64(alignmentStats.GetTiltAngleDeg()),
+	)
+
 	return true
 }
 

@@ -167,6 +167,21 @@ var (
 			"desiredBoresightAzimuthDeg",
 			"desiredBoresightElevationDeg"}, nil,
 	)
+	dishBoresightAzimuthDiffDeg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "boresight_azimuth_diff_deg"),
+		"Difference between desired and actual boresight azimuth in degrees",
+		nil, nil,
+	)
+	dishBoresightElevationDiffDeg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "boresight_elevation_diff_deg"),
+		"Difference between desired and actual boresight elevation in degrees",
+		nil, nil,
+	)
+	dishTiltAngleDeg = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "tilt_angle_deg"),
+		"Dish tilt angle in degrees from vertical",
+		nil, nil,
+	)
 	// DeviceState
 	dishUp = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "up"),
