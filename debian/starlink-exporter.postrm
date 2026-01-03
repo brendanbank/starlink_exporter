@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        # Remove state directory
+        rm -rf /var/lib/starlink-exporter || true
+
+        # Remove user and group on purge
+        if getent passwd starlink-exporter >/dev/null 2>&1; then
+            deluser --quiet starlink-exporter || true
+        fi
+
+        if getent group starlink-exporter >/dev/null 2>&1; then
+            delgroup --quiet starlink-exporter || true
+        fi
+        ;;
+
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # Do nothing on remove/upgrade - keep user for logs access
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

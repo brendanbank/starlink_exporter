@@ -78,10 +78,35 @@ set -e
 
 case "$1" in
     configure)
+        # Create starlink-exporter user and group if they don't exist
+        if ! getent group starlink-exporter >/dev/null 2>&1; then
+            addgroup --system starlink-exporter
+        fi
+
+        if ! getent passwd starlink-exporter >/dev/null 2>&1; then
+            adduser --system --ingroup starlink-exporter \
+                --no-create-home --disabled-password \
+                --gecos "Starlink Exporter Service" \
+                starlink-exporter
+        fi
+
+        # Ensure binary has correct permissions
+        chown root:root /usr/bin/starlink_exporter
+        chmod 755 /usr/bin/starlink_exporter
+
+        # Create state directory
+        mkdir -p /var/lib/starlink-exporter
+        chown starlink-exporter:starlink-exporter /var/lib/starlink-exporter
+        chmod 755 /var/lib/starlink-exporter
+
+        # Reload systemd
         systemctl daemon-reload || true
+
+        # Enable the service (but don't start it automatically)
         systemctl enable starlink-exporter.service || true
 
         echo "Starlink Exporter has been installed."
+        echo "Service runs as user: starlink-exporter"
         echo "To start the service: systemctl start starlink-exporter"
         echo "To view logs: journalctl -u starlink-exporter -f"
         ;;
@@ -106,6 +131,35 @@ esac
 exit 0
 EOF
     chmod 755 "${PKG_DIR}/DEBIAN/prerm"
+
+    # Create postrm script
+    cat > "${PKG_DIR}/DEBIAN/postrm" <<'EOF'
+#!/bin/sh
+set -e
+
+case "$1" in
+    purge)
+        # Remove state directory
+        rm -rf /var/lib/starlink-exporter || true
+
+        # Remove user and group on purge
+        if getent passwd starlink-exporter >/dev/null 2>&1; then
+            deluser --quiet starlink-exporter || true
+        fi
+
+        if getent group starlink-exporter >/dev/null 2>&1; then
+            delgroup --quiet starlink-exporter || true
+        fi
+        ;;
+
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        # Do nothing on remove/upgrade - keep user for logs access
+        ;;
+esac
+
+exit 0
+EOF
+    chmod 755 "${PKG_DIR}/DEBIAN/postrm"
 
     # Build the package
     echo "  - Creating .deb package..."

@@ -3,6 +3,27 @@ set -e
 
 case "$1" in
     configure)
+        # Create starlink-exporter user and group if they don't exist
+        if ! getent group starlink-exporter >/dev/null 2>&1; then
+            addgroup --system starlink-exporter
+        fi
+
+        if ! getent passwd starlink-exporter >/dev/null 2>&1; then
+            adduser --system --ingroup starlink-exporter \
+                --no-create-home --disabled-password \
+                --gecos "Starlink Exporter Service" \
+                starlink-exporter
+        fi
+
+        # Ensure binary has correct permissions
+        chown root:root /usr/bin/starlink_exporter
+        chmod 755 /usr/bin/starlink_exporter
+
+        # Create state directory
+        mkdir -p /var/lib/starlink-exporter
+        chown starlink-exporter:starlink-exporter /var/lib/starlink-exporter
+        chmod 755 /var/lib/starlink-exporter
+
         # Reload systemd
         systemctl daemon-reload || true
 
@@ -10,8 +31,9 @@ case "$1" in
         systemctl enable starlink-exporter.service || true
 
         echo "Starlink Exporter has been installed."
-        echo "To start the service, run: systemctl start starlink-exporter"
-        echo "To view logs, run: journalctl -u starlink-exporter -f"
+        echo "Service runs as user: starlink-exporter"
+        echo "To start the service: systemctl start starlink-exporter"
+        echo "To view logs: journalctl -u starlink-exporter -f"
         ;;
 esac
 
