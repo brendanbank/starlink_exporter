@@ -1,8 +1,11 @@
 starlink_exporter
+starlink_exporter_*
 cmd/starlink_exporter/starlink_exporter
 debug.json
 res.txt
 dist/
+build/
+*.deb
 make.sh
 .idea/
 .dccache

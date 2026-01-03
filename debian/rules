@@ -1,0 +1,16 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	# Binary is already built by Makefile, skip build
+
+override_dh_auto_install:
+	# Installation handled by .install file
+
+override_dh_auto_test:
+	# Skip tests during package build
+
+override_dh_strip:
+	# Don't strip - binary is already stripped

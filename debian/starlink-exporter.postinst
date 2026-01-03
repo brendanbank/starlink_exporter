@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        # Reload systemd
+        systemctl daemon-reload || true
+
+        # Enable the service (but don't start it automatically)
+        systemctl enable starlink-exporter.service || true
+
+        echo "Starlink Exporter has been installed."
+        echo "To start the service, run: systemctl start starlink-exporter"
+        echo "To view logs, run: journalctl -u starlink-exporter -f"
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

@@ -1,0 +1,8 @@
+starlink-exporter (1.0.0) unstable; urgency=medium
+
+  * Initial Debian package release
+  * Multi-architecture support (amd64, arm64, armhf)
+  * Systemd service integration
+  * Prometheus metrics exporter for Starlink
+
+ -- Brendan Bank <brendan@brendanbank.nl>  Fri, 03 Jan 2026 13:30:00 +0000

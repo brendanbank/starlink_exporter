@@ -1,10 +1,11 @@
 [Unit]
-Description=Starlink Exporter
+Description=Starlink Exporter - Prometheus exporter for Starlink metrics
+Documentation=https://github.com/brendanbank/starlink_exporter
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/starlink_exporter/starlink_exporter
+ExecStart=/usr/bin/starlink_exporter
 Restart=on-failure
 RestartSec=10s
 User=root

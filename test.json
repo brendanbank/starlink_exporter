@@ -1,0 +1,2565 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "grafana",
+            "uid": "-- Grafana --"
+          },
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "id": 0,
+    "links": [],
+    "panels": [
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "displayName": "Dish Uptime",
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 3,
+          "x": 0,
+          "y": 0
+        },
+        "id": 21,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_uptime_seconds{device_id=\"$device_id\"}",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 0,
+            "displayName": "Ping",
+            "mappings": [],
+            "max": 1,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "#6ED0E0",
+                  "value": 0.5
+                },
+                {
+                  "color": "#1F78C1",
+                  "value": 0.6
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 0.7
+                },
+                {
+                  "color": "#EF843C",
+                  "value": 0.8
+                },
+                {
+                  "color": "#E24D42",
+                  "value": 0.9
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 3,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "minVizHeight": 75,
+          "minVizWidth": 75,
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "sizing": "auto"
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_pop_ping_latency_seconds{device_id=\"$device_id\"}",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "transparent": true,
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 0,
+            "displayName": "Ping drop rate",
+            "mappings": [],
+            "max": 1,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "#6ED0E0",
+                  "value": 0.1
+                },
+                {
+                  "color": "#1F78C1",
+                  "value": 0.2
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 0.3
+                },
+                {
+                  "color": "#EF843C",
+                  "value": 0.4
+                },
+                {
+                  "color": "#E24D42",
+                  "value": 0.5
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 7,
+          "y": 0
+        },
+        "id": 5,
+        "options": {
+          "minVizHeight": 75,
+          "minVizWidth": 75,
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "sizing": "auto"
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_pop_ping_drop_ratio{device_id=\"$device_id\"}",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "transparent": true,
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "decimals": 2,
+            "displayName": "Fraction Obstructed",
+            "mappings": [],
+            "max": 1,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "#6ED0E0",
+                  "value": 0.1
+                },
+                {
+                  "color": "#1F78C1",
+                  "value": 0.2
+                },
+                {
+                  "color": "#EAB839",
+                  "value": 0.3
+                },
+                {
+                  "color": "#EF843C",
+                  "value": 0.4
+                },
+                {
+                  "color": "#E24D42",
+                  "value": 0.5
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 11,
+          "y": 0
+        },
+        "id": 6,
+        "options": {
+          "minVizHeight": 75,
+          "minVizWidth": 75,
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [],
+            "fields": "",
+            "values": false
+          },
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true,
+          "sizing": "auto"
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_fraction_obstruction_ratio{device_id=\"$device_id\"}",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "transparent": true,
+        "type": "gauge"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "displayName": "Dish Status",
+            "mappings": [
+              {
+                "options": {
+                  "0": {
+                    "color": "red",
+                    "index": 1,
+                    "text": "Down"
+                  },
+                  "1": {
+                    "color": "green",
+                    "index": 0,
+                    "text": "Up"
+                  }
+                },
+                "type": "value"
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 3,
+          "w": 3,
+          "x": 0,
+          "y": 3
+        },
+        "id": 22,
+        "options": {
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "percentChangeColorMode": "standard",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
+          },
+          "showPercentChange": false,
+          "textMode": "auto",
+          "wideLayout": true
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_up{device_id=\"$device_id\"}",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "type": "stat"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "scaleDistribution": {
+                "type": "linear"
+              }
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 2,
+          "w": 24,
+          "x": 0,
+          "y": 6
+        },
+        "id": 15,
+        "options": {
+          "calculate": false,
+          "cellGap": 0,
+          "color": {
+            "exponent": 0.8,
+            "fill": "dark-red",
+            "max": 1,
+            "min": 0,
+            "mode": "scheme",
+            "reverse": false,
+            "scale": "exponential",
+            "scheme": "RdYlGn",
+            "steps": 10
+          },
+          "exemplars": {
+            "color": "rgba(255,0,255,0.7)"
+          },
+          "filterValues": {
+            "le": 1e-9
+          },
+          "legend": {
+            "show": false
+          },
+          "rowsFrame": {
+            "layout": "auto"
+          },
+          "tooltip": {
+            "maxHeight": 600,
+            "mode": "single",
+            "showColorScale": true,
+            "yHistogram": true
+          },
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false,
+            "unit": "percentunit"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_pop_ping_drop_ratio{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Ping Drop Rate",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "transparent": true,
+        "type": "heatmap"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "bps"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/downlink/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Downlink"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/uplink/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Uplink"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 8
+        },
+        "id": 7,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "maxHeight": 600,
+            "mode": "multi",
+            "sort": "asc"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "0-starlink_dish_uplink_throughput_bytes{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Upload",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_downlink_throughput_bytes{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Download",
+            "range": true,
+            "refId": "B"
+          }
+        ],
+        "title": "Throughput",
+        "transparent": true,
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "fixed"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 1,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                }
+              ]
+            },
+            "unit": "s"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Max Latency"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Ping Latency Max"
+                },
+                {
+                  "id": "custom.fillBelowTo",
+                  "value": "Min Latency"
+                },
+                {
+                  "id": "custom.lineWidth",
+                  "value": 0
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "light-blue",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.fillOpacity",
+                  "value": 30
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Min Latency"
+              },
+              "properties": [
+                {
+                  "id": "custom.lineWidth",
+                  "value": 0
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "light-blue",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "starlink_dish_pop_ping_drop_ratio"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Ping Drop rate"
+                },
+                {
+                  "id": "custom.lineWidth",
+                  "value": 0
+                },
+                {
+                  "id": "custom.pointSize",
+                  "value": 5
+                },
+                {
+                  "id": "unit",
+                  "value": "percentunit"
+                },
+                {
+                  "id": "custom.axisPlacement",
+                  "value": "right"
+                },
+                {
+                  "id": "custom.axisLabel",
+                  "value": "Packet Loss"
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "dark-red",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.showPoints",
+                  "value": "always"
+                },
+                {
+                  "id": "min",
+                  "value": 0.03
+                },
+                {
+                  "id": "max",
+                  "value": 1
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Latency"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "light-blue",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 16
+        },
+        "id": 3,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "maxHeight": 600,
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_pop_ping_drop_ratio{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Ping Drop Rate",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_pop_ping_latency_seconds{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Latency",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "min_over_time(starlink_dish_pop_ping_latency_seconds{device_id=\"$device_id\"}[1m])",
+            "instant": false,
+            "legendFormat": "Min Latency",
+            "range": true,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "max_over_time(starlink_dish_pop_ping_latency_seconds{device_id=\"$device_id\"}[1m])",
+            "instant": false,
+            "legendFormat": "Max Latency",
+            "range": true,
+            "refId": "D"
+          }
+        ],
+        "title": "Ping Latency",
+        "transparent": true,
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "axisPlacement": "auto",
+              "fillOpacity": 81,
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineWidth": 0,
+              "spanNulls": false
+            },
+            "fieldMinMax": false,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 1
+                }
+              ]
+            },
+            "unit": "bool"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 24
+        },
+        "id": 10,
+        "options": {
+          "alignValue": "left",
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": false
+          },
+          "mergeValues": false,
+          "rowHeight": 0.8,
+          "showValue": "auto",
+          "tooltip": {
+            "hideZeros": false,
+            "maxHeight": 600,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_motors_stuck{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Motors Stuck",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_thermal_throttle{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Thermal Throttle",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_thermal_shutdown{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Thermal Shutdown",
+            "range": true,
+            "refId": "C"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_status_alert_mast_not_near_vertical{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Mast not near vertical",
+            "range": true,
+            "refId": "D"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_unexpected_location{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Unexpected location",
+            "range": true,
+            "refId": "E"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_slow_eth_speeds{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Slow Ethernet Speeds",
+            "range": true,
+            "refId": "F"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_roaming{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Roaming",
+            "range": true,
+            "refId": "H"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_install_pending{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Install Pending",
+            "range": true,
+            "refId": "I"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_is_heating{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Is Heating",
+            "range": true,
+            "refId": "J"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_power_supply_thermal_throttle{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "PS Thermal Trottle",
+            "range": true,
+            "refId": "K"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_power_save_idle{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Sleeping",
+            "range": true,
+            "refId": "L"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_unexpected_location{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Unexpected Location",
+            "range": true,
+            "refId": "N"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_low_motor_current{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Low Motor Current",
+            "range": true,
+            "refId": "P"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_lower_signal_than_predicted{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Lower signal than predicted",
+            "range": true,
+            "refId": "Q"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_mast_not_near_vertical{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "mast not near vertical",
+            "range": true,
+            "refId": "G"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_alert_obstruction_map_reset{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Obstruction Map Reset",
+            "range": true,
+            "refId": "M"
+          }
+        ],
+        "title": "Alerts",
+        "transparent": true,
+        "type": "state-timeline"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "continuous-BlYlRd"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 5,
+            "displayName": "Fraction Obstructed",
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percent"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Fraction Obstructed"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 32
+        },
+        "id": 8,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "maxHeight": 600,
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_fraction_obstruction_ratio{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Fraction Obstructed",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Percentage Obstructed",
+        "transparent": true,
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byFrameRefID",
+                "options": "A"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Connected GPS Satellites"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 8,
+          "x": 0,
+          "y": 38
+        },
+        "id": 23,
+        "options": {
+          "legend": {
+            "calcs": [
+              "min",
+              "max",
+              "mean"
+            ],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_gps_sats{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Connected GPS Satellites",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "decimals": 5,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "degree"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "starlink_dish_altitude"
+              },
+              "properties": [
+                {
+                  "id": "custom.axisPlacement",
+                  "value": "right"
+                },
+                {
+                  "id": "unit",
+                  "value": "lengthm"
+                },
+                {
+                  "id": "decimals"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 8,
+          "x": 8,
+          "y": 38
+        },
+        "id": 20,
+        "options": {
+          "legend": {
+            "calcs": [
+              "lastNotNull",
+              "median"
+            ],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "expr": "starlink_dish_longitude{device_id=\"$device_id\"}",
+            "legendFormat": "Lon",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_latitude{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Lat",
+            "range": true,
+            "refId": "B"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_altitude{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Alt",
+            "range": true,
+            "refId": "C"
+          }
+        ],
+        "title": "Location",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              }
+            },
+            "decimals": 5,
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "degree"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/latitude/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "latitude"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byRegexp",
+                "options": "/longitude/"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "longitude"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Altitude"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "altitude"
+                },
+                {
+                  "id": "unit",
+                  "value": "lengthm"
+                },
+                {
+                  "id": "decimals"
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 8,
+          "x": 16,
+          "y": 38
+        },
+        "id": 9,
+        "options": {
+          "basemap": {
+            "config": {
+              "server": "streets",
+              "showLabels": true,
+              "theme": "auto"
+            },
+            "layer-tooltip": false,
+            "name": "Layer 0",
+            "noRepeat": false,
+            "opacity": 1,
+            "type": "osm-standard"
+          },
+          "controls": {
+            "mouseWheelZoom": true,
+            "showAttribution": true,
+            "showDebug": false,
+            "showMeasure": false,
+            "showScale": false,
+            "showZoom": true
+          },
+          "layers": [
+            {
+              "config": {
+                "showLegend": false,
+                "style": {
+                  "color": {
+                    "fixed": "dark-red"
+                  },
+                  "opacity": 1,
+                  "rotation": {
+                    "fixed": 0,
+                    "max": 360,
+                    "min": -360,
+                    "mode": "mod"
+                  },
+                  "size": {
+                    "fixed": 10,
+                    "max": 15,
+                    "min": 2
+                  },
+                  "symbol": {
+                    "fixed": "img/icons/marker/circle.svg",
+                    "mode": "fixed"
+                  },
+                  "symbolAlign": {
+                    "horizontal": "center",
+                    "vertical": "center"
+                  },
+                  "text": {
+                    "field": "",
+                    "fixed": "",
+                    "mode": "field"
+                  },
+                  "textConfig": {
+                    "fontSize": 12,
+                    "offsetX": 0,
+                    "offsetY": 0,
+                    "textAlign": "center",
+                    "textBaseline": "middle"
+                  }
+                }
+              },
+              "filterData": {
+                "id": "byRefId",
+                "options": "A"
+              },
+              "layer-tooltip": true,
+              "location": {
+                "mode": "auto"
+              },
+              "name": "Layer 1",
+              "tooltip": true,
+              "type": "markers"
+            }
+          ],
+          "tooltip": {
+            "mode": "details"
+          },
+          "view": {
+            "allLayers": true,
+            "id": "fit",
+            "lat": 0,
+            "lon": 0,
+            "noRepeat": false,
+            "shared": true,
+            "zoom": 13
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_location_info{device_id=\"$device_id\"}",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "",
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "includeByName": {},
+              "indexByName": {},
+              "orderByMode": "manual",
+              "renameByName": {
+                "Time": "",
+                "alt": "alt",
+                "lat": "lat",
+                "lon": "lon",
+                "{__name__=\"starlink_dish_location_info\", alt=\"431.639\", horizontalSpeedMps=\"0.016857\", instance=\"casa-sc.bgwlan.nl:9817\", job=\"starlink\", lat=\"42.917789\", location_source=\"GNC_NO_ACCEL\", lon=\"12.034732\", scrape_host=\"casa-sc\", sigmaM=\"0.973739\", target=\"casa-sc.bgwlan.nl\", verticalSpeedMps=\"0.003107\"}": ""
+              }
+            }
+          },
+          {
+            "id": "extractFields",
+            "options": {
+              "delimiter": ",",
+              "source": "alt"
+            }
+          },
+          {
+            "id": "extractFields",
+            "options": {
+              "delimiter": ",",
+              "source": "lat"
+            }
+          },
+          {
+            "id": "extractFields",
+            "options": {}
+          }
+        ],
+        "transparent": true,
+        "type": "geomap"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "footer": {
+                "reducers": []
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "actuatorState"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 152
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 8,
+          "x": 0,
+          "y": 48
+        },
+        "id": 24,
+        "options": {
+          "cellHeight": "sm",
+          "showHeader": true
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_alignment_stats{device_id=\"$device_id\"}",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Starlink Dish Alignment Stats",
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "Value": true,
+                "__name__": true,
+                "instance": true,
+                "job": true,
+                "scrape_host": true,
+                "target": true
+              },
+              "includeByName": {},
+              "indexByName": {
+                "actuatorState": 1,
+                "attitudeEstimationState": 2,
+                "attitudeUncertaintyDeg": 3,
+                "boresightAzimuthDeg": 4,
+                "boresightElevationDeg": 7,
+                "desiredBoresightAzimuthDeg": 5,
+                "desiredBoresightElevationDeg": 6,
+                "hasActuators": 0,
+                "tiltAngleDeg": 8
+              },
+              "renameByName": {}
+            }
+          },
+          {
+            "id": "reduce",
+            "options": {
+              "labelsToFields": false,
+              "reducers": [
+                "last"
+              ]
+            }
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "degree"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 12,
+          "w": 16,
+          "x": 8,
+          "y": 48
+        },
+        "id": 25,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "multi",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "expr": "starlink_dish_boresight_azimuth_diff_deg{device_id=\"$device_id\"}",
+            "legendFormat": "Azimuth diff",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_boresight_elevation_diff_deg",
+            "instant": false,
+            "legendFormat": "Elevation diff",
+            "range": true,
+            "refId": "B"
+          }
+        ],
+        "title": "Dish angle v.s. Optimal",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "footer": {
+                "reducers": []
+              },
+              "inspect": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "actuatorState"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 152
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 11,
+          "w": 18,
+          "x": 0,
+          "y": 60
+        },
+        "id": 26,
+        "options": {
+          "cellHeight": "sm",
+          "showHeader": true
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "exemplar": false,
+            "expr": "starlink_dish_info{device_id=\"$device_id\"}",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "__auto",
+            "range": false,
+            "refId": "A"
+          }
+        ],
+        "title": "Starlink Dish Info",
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "Value": true,
+                "__name__": true,
+                "instance": true,
+                "job": true,
+                "scrape_host": true,
+                "target": true
+              },
+              "includeByName": {},
+              "indexByName": {
+                "actuatorState": 1,
+                "attitudeEstimationState": 2,
+                "attitudeUncertaintyDeg": 3,
+                "boresightAzimuthDeg": 4,
+                "boresightElevationDeg": 7,
+                "desiredBoresightAzimuthDeg": 5,
+                "desiredBoresightElevationDeg": 6,
+                "hasActuators": 0,
+                "tiltAngleDeg": 8
+              },
+              "renameByName": {}
+            }
+          },
+          {
+            "id": "reduce",
+            "options": {
+              "labelsToFields": false,
+              "reducers": [
+                "last"
+              ]
+            }
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "align": "auto",
+              "cellOptions": {
+                "type": "auto"
+              },
+              "footer": {
+                "reducers": []
+              },
+              "inspect": false,
+              "tooltip": {
+                "placement": "auto"
+              },
+              "wrapHeaderText": false
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "software_version"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 489
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 6,
+          "w": 24,
+          "x": 0,
+          "y": 71
+        },
+        "id": 14,
+        "options": {
+          "cellHeight": "sm",
+          "showHeader": true,
+          "sortBy": [
+            {
+              "desc": true,
+              "displayName": "Time (firstNotNull)"
+            }
+          ]
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_info{device_id=\"$device_id\"}",
+            "format": "table",
+            "instant": false,
+            "legendFormat": "__auto",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "timeFrom": "90d",
+        "title": "Software",
+        "transformations": [
+          {
+            "id": "labelsToFields",
+            "options": {
+              "keepLabels": [
+                "software_version"
+              ],
+              "mode": "columns"
+            }
+          },
+          {
+            "id": "groupBy",
+            "options": {
+              "fields": {
+                "Time": {
+                  "aggregations": [
+                    "lastNotNull",
+                    "firstNotNull"
+                  ],
+                  "operation": "aggregate"
+                },
+                "software_version": {
+                  "aggregations": [],
+                  "operation": "groupby"
+                }
+              }
+            }
+          },
+          {
+            "disabled": true,
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "includeByName": {},
+              "indexByName": {
+                "Time (firstNotNull)": 1,
+                "Time (lastNotNull)": 2,
+                "software_version": 0
+              },
+              "renameByName": {
+                "Time (firstNotNull)": "First Seen",
+                "Time (lastNotNull)": "Last Seen"
+              }
+            }
+          },
+          {
+            "disabled": true,
+            "id": "filterByValue",
+            "options": {
+              "filters": [
+                {
+                  "config": {
+                    "id": "isNull",
+                    "options": {}
+                  },
+                  "fieldName": "software_version"
+                }
+              ],
+              "match": "any",
+              "type": "exclude"
+            }
+          }
+        ],
+        "type": "table"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "watt"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "mean power"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                },
+                {
+                  "id": "custom.lineWidth",
+                  "value": 3
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 77
+        },
+        "id": 18,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "editorMode": "code",
+            "expr": "starlink_dish_power_watt_current{device_id=\"$device_id\"}",
+            "legendFormat": "latest",
+            "range": true,
+            "refId": "A"
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_power_watt_avg_15min{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "mean power",
+            "range": true,
+            "refId": "B"
+          }
+        ],
+        "title": "Powerdraw",
+        "type": "timeseries"
+      },
+      {
+        "datasource": {
+          "type": "prometheus",
+          "uid": "bdg4cbcx05lhce"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisBorderShow": false,
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "barWidthFactor": 0.6,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "insertNulls": false,
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "showValues": false,
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": 0
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "percentunit"
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 85
+        },
+        "id": 19,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "hideZeros": false,
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "pluginVersion": "12.4.0-20160616057",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "bdg4cbcx05lhce"
+            },
+            "editorMode": "code",
+            "expr": "starlink_dish_pop_ping_drop_ratio{device_id=\"$device_id\"}",
+            "instant": false,
+            "legendFormat": "Ping Drop Rate",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Ping Drop Rate",
+        "transparent": true,
+        "type": "timeseries"
+      }
+    ],
+    "preload": false,
+    "refresh": "",
+    "schemaVersion": 42,
+    "tags": [],
+    "templating": {
+      "list": [
+        {
+          "current": {
+            "text": "casa-sc.bgwlan.nl:9817",
+            "value": "casa-sc.bgwlan.nl:9817"
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "bdg4cbcx05lhce"
+          },
+          "definition": "label_values(starlink_dish_up,instance)",
+          "includeAll": false,
+          "label": "instance",
+          "name": "instance",
+          "options": [],
+          "query": {
+            "qryType": 1,
+            "query": "label_values(starlink_dish_up,instance)",
+            "refId": "PrometheusVariableQueryEditor-VariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "regexApplyTo": "value",
+          "type": "query"
+        },
+        {
+          "current": {
+            "text": "ut31600497-0212791c-59cda11f",
+            "value": "ut31600497-0212791c-59cda11f"
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "bdg4cbcx05lhce"
+          },
+          "definition": "label_values(starlink_dish_up,device_id)",
+          "label": "Device ID",
+          "name": "device_id",
+          "options": [],
+          "query": {
+            "qryType": 1,
+            "query": "label_values(starlink_dish_up,device_id)",
+            "refId": "PrometheusVariableQueryEditor-VariableQuery"
+          },
+          "refresh": 1,
+          "regex": "",
+          "regexApplyTo": "value",
+          "type": "query"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-12h",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Starlinkv3",
+    "uid": "brhcnx2",
+    "version": 23,
+    "weekStart": ""
+  }

@@ -1,0 +1,15 @@
+Source: starlink-exporter
+Section: net
+Priority: optional
+Maintainer: Brendan Bank <brendan@brendanbank.nl>
+Build-Depends: debhelper (>= 10)
+Standards-Version: 4.1.3
+Homepage: https://github.com/brendanbank/starlink_exporter
+
+Package: starlink-exporter
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Prometheus exporter for Starlink metrics
+ A Prometheus exporter that collects metrics from Starlink dishes
+ including signal quality, obstruction data, alignment statistics,
+ and power consumption.
