@@ -102,13 +102,14 @@ case "$1" in
         # Reload systemd
         systemctl daemon-reload || true
 
-        # Enable the service (but don't start it automatically)
+        # Enable and start the service
         systemctl enable starlink-exporter.service || true
+        systemctl start starlink-exporter.service || true
 
-        echo "Starlink Exporter has been installed."
+        echo "Starlink Exporter has been installed and started."
         echo "Service runs as user: starlink-exporter"
-        echo "To start the service: systemctl start starlink-exporter"
-        echo "To view logs: journalctl -u starlink-exporter -f"
+        echo "Check status: systemctl status starlink-exporter"
+        echo "View logs: journalctl -u starlink-exporter -f"
         ;;
 esac
 
