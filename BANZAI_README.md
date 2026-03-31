@@ -1,10 +1,89 @@
-# Starlink Exporter — Fork Changes
-
-This is a fork of [clarkzjw/starlink_exporter](https://github.com/clarkzjw/starlink_exporter), a Prometheus exporter for Starlink dish metrics via gRPC.
+<p align="center">
+  <h3 align="center">Starlink Prometheus Exporter Monitoring Stack</h3>
+</p>
 
 ---
 
-## What's Different in This Fork
+A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated with or acting on behalf of Starlink(™)
+
+This is a fork of [clarkzjw/starlink_exporter](https://github.com/clarkzjw/starlink_exporter) with Debian packaging, security hardening, and additional metrics.
+
+[![build](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml)
+[![License](https://img.shields.io/github/license/clarkzjw/starlink_exporter)](/LICENSE)
+[![Release](https://img.shields.io/github/release/brendanbank/starlink_exporter.svg)](https://github.com/brendanbank/starlink_exporter/releases/latest)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/clarkzjw/starlink_exporter)
+
+Original repositories:
+
+- https://github.com/danopstech/starlink_exporter
+- https://github.com/clarkzjw/starlink_exporter
+
+---
+
+Starlink gRPC protobuf for Golang: [clarkzjw/starlink-grpc-golang](https://github.com/clarkzjw/starlink-grpc-golang)
+
+Starlink dish firmware tracking website: https://starlinktrack.com/firmware/dishy
+
+---
+
+## Installation
+
+### Debian/Ubuntu (recommended)
+
+Pre-built `.deb` packages are published with each release for amd64, arm64, and armhf (Raspberry Pi).
+
+```bash
+wget https://github.com/brendanbank/starlink_exporter/releases/latest/download/starlink-exporter_<version>_amd64.deb
+sudo dpkg -i starlink-exporter_<version>_amd64.deb
+```
+
+The service is enabled and started automatically after installation.
+
+See [PACKAGING.md](PACKAGING.md) for full build and publish instructions.
+
+### Binaries
+
+For pre-built binaries see the [releases](https://github.com/brendanbank/starlink_exporter/releases).
+
+```bash
+./starlink_exporter [flags]
+```
+
+### Docker Compose Stack
+
+Use the `docker-compose.yaml` in the [contrib](./contrib) directory.
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## Usage
+
+### Flags
+
+`starlink_exporter` is configured through optional command line flags:
+
+```bash
+$ ./starlink_exporter -h
+Usage of ./starlink_exporter:
+  -address string
+        IP address and port to reach dish (default "192.168.100.1:9200")
+  -port string
+        listening port to expose metrics on (default "9817")
+```
+
+### Service management
+
+```bash
+sudo systemctl status starlink-exporter
+sudo journalctl -u starlink-exporter -f
+```
+
+---
+
+## Fork Changes
 
 ### New Prometheus Metrics
 
@@ -32,38 +111,7 @@ The following metrics have been added on top of upstream:
 
 **Device ID Label**
 
-All metrics now include a `device_id` label for identifying individual dishes when multiple units are monitored.
-
----
-
-### Debian/Ubuntu Packaging
-
-Pre-built `.deb` packages are published with each release for:
-- `amd64` (x86_64)
-- `arm64` (64-bit ARM)
-- `armhf` (Raspberry Pi / 32-bit ARM)
-
-Install from a release:
-
-```bash
-wget https://github.com/brendanbank/starlink_exporter/releases/latest/download/starlink-exporter_<version>_amd64.deb
-sudo dpkg -i starlink-exporter_<version>_amd64.deb
-```
-
-See [PACKAGING.md](PACKAGING.md) for full build and publish instructions.
-
----
-
-### Systemd Service
-
-A `starlink-exporter.service` unit file is included. After `.deb` installation the service is enabled and started automatically.
-
-```bash
-sudo systemctl status starlink-exporter
-sudo journalctl -u starlink-exporter -f
-```
-
----
+All metrics include a `device_id` label for identifying individual dishes when multiple units are monitored.
 
 ### Security Hardening
 
@@ -76,13 +124,11 @@ The service runs as a dedicated `starlink-exporter` system user (not root), with
 
 A state directory `/var/lib/starlink-exporter` is created on install and removed on purge.
 
----
-
 ### Build System
 
 - `Makefile` updated for cross-compilation targeting Linux, macOS, and Windows (amd64, arm64, armhf)
 - Optional UPX compression for binary size reduction
-- Docker image building and Docker Hub publishing removed; releases are binary + `.deb` only
+- Docker image building and Docker Hub publishing removed; releases are binary archives + `.deb` only
 - GitHub Actions workflow builds and attaches `.deb` packages to the GoReleaser release
 
 ---
@@ -99,7 +145,8 @@ A state directory `/var/lib/starlink-exporter` is created on install and removed
 
 ---
 
-## Upstream
+## Grafana Dashboard
 
-- Original fork base: [clarkzjw/starlink_exporter](https://github.com/clarkzjw/starlink_exporter)
-- Starlink gRPC protobuf: [clarkzjw/starlink-grpc-golang](https://github.com/clarkzjw/starlink-grpc-golang)
+<p align="center">
+	<img src="https://github.com/clarkzjw/starlink_exporter/raw/main/static/Screenshot.jpeg" width="95%">
+</p>
