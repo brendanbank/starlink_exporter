@@ -49,15 +49,6 @@ For pre-built binaries see the [releases](https://github.com/brendanbank/starlin
 ./starlink_exporter [flags]
 ```
 
-### Docker Compose Stack
-
-Use the `docker-compose.yaml` in the [contrib](./contrib) directory.
-
-```bash
-docker-compose up -d
-```
-
----
 
 ## Usage
 
