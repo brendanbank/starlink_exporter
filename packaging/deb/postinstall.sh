@@ -27,9 +27,18 @@ case "$1" in
         # Reload systemd
         systemctl daemon-reload || true
 
-        # Enable and start the service
+        # Enable the service, then activate the version just unpacked.
+        # $2 is the previously configured version: empty on a fresh install,
+        # set on an upgrade. On upgrade the service is usually already
+        # running, and "start" is a no-op that leaves the old binary running
+        # until something else restarts it. try-restart picks up the new
+        # binary, while still leaving a deliberately stopped service stopped.
         systemctl enable starlink-exporter.service || true
-        systemctl start starlink-exporter.service || true
+        if [ -n "$2" ]; then
+            systemctl try-restart starlink-exporter.service || true
+        else
+            systemctl start starlink-exporter.service || true
+        fi
 
         echo "Starlink Exporter has been installed and started."
         echo "Service runs as user: starlink-exporter"

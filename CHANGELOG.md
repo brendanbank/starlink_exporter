@@ -19,6 +19,10 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 - Removed the unused `debian/` debhelper configuration, which was never used by
   the build, and `scripts/build-deb.sh` / `scripts/publish-deb.sh`
 - `make build-deb` now shells out to goreleaser and writes to `dist/`
+- Upgrades now restart the service. The postinstall script ran `systemctl
+  start`, which is a no-op when the service is already running, so an upgrade
+  left the old binary running until the next manual restart or reboot. It now
+  runs `try-restart` on upgrade and `start` on fresh install
 
 ## [v0.0.9] — 2026-08-02
 
