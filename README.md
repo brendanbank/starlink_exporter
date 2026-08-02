@@ -94,6 +94,12 @@ The following metrics have been added on top of upstream:
 - `starlink_dish_snr_above_noise_floor` — whether SNR is above the noise floor
 - `starlink_dish_snr_persistently_low` — whether SNR is persistently low
 
+**GPS**
+- `starlink_dish_pnt_filter_convergence_state` — position/navigation/timing filter convergence state (`0` reset, `1` unconverged, `2` converged, `3` faulted, `4` invalid), with the name in a `pnt_filter_convergence_state` label
+
+**Alerts**
+- `starlink_dish_alert_no_ethernet_link` — no ethernet link detected
+
 **Dish Status**
 - `starlink_dish_initialization_duration_seconds` — time taken to initialize the dish
 - `starlink_dish_power_supply_connected` — power supply connectivity status

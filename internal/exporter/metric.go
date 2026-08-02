@@ -236,6 +236,11 @@ var (
 		"Number of GPS Sats.",
 		[]string{"device_id"}, nil,
 	)
+	dishPntFilterConvergenceState = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "pnt_filter_convergence_state"),
+		"Convergence state of the position/navigation/timing filter",
+		[]string{"device_id", "pnt_filter_convergence_state"}, nil,
+	)
 	// DishStatus
 	dishSecondsToFirstNonemptySlot = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "first_nonempty_slot_seconds"),
@@ -381,6 +386,11 @@ var (
 	dishIsHeating = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "alert_is_heating"),
 		"Is Heating",
+		[]string{"device_id"}, nil,
+	)
+	dishNoEthernetLink = prometheus.NewDesc(
+		prometheus.BuildFQName(namespace, "dish", "alert_no_ethernet_link"),
+		"No ethernet link detected",
 		[]string{"device_id"}, nil,
 	)
 	// DishObstructions

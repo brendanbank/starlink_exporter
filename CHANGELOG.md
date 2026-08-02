@@ -6,6 +6,14 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
+## [v0.0.9] — 2026-08-02
+
+- Bumped `clarkzjw/starlink-grpc-golang` from `v1.0.20250818` to `v1.0.20260526` (dish protoset `2026.05.26.mr80668`), pulling in grpc `1.79.1` and protobuf `1.36.10`
+- New Prometheus metrics:
+  - `starlink_dish_pnt_filter_convergence_state`
+  - `starlink_dish_alert_no_ethernet_link`
+- `starlink_dish_outage_duration` now resolves the `SKY_SEARCH` and `INHIBIT_RF` outage causes instead of leaving them unnamed
+
 ## [v0.0.8] — 2026-01-03
 
 - Post-install script now enables and starts the `starlink-exporter` service automatically after `.deb` installation

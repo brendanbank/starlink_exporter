@@ -109,6 +109,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	// DishGpsStats
 	ch <- dishGpsValid
 	ch <- dishGpsSats
+	ch <- dishPntFilterConvergenceState
 
 	// DishLocation
 	ch <- dishLatitude
@@ -143,6 +144,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishSlowEthernetSpeeds
 	ch <- dishInstallPending
 	ch <- dishIsHeating
+	ch <- dishNoEthernetLink
 
 	// DishAlignment
 	ch <- dishAlignmentStats
@@ -323,6 +325,11 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishGpsSats, prometheus.GaugeValue, float64(dishG.GetGpsSats()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPntFilterConvergenceState, prometheus.GaugeValue, float64(dishG.GetPntFilterConvergenceState()),
+		e.DishID,
+		dishG.GetPntFilterConvergenceState().String(),
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishSecondsToFirstNonemptySlot, prometheus.GaugeValue, float64(dishStatus.GetSecondsToFirstNonemptySlot()), e.DishID,
@@ -640,6 +647,9 @@ func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
 	)
 	ch <- prometheus.MustNewConstMetric(
 		dishIsHeating, prometheus.GaugeValue, flool(alerts.GetIsHeating()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishNoEthernetLink, prometheus.GaugeValue, flool(alerts.GetNoEthernetLink()), e.DishID,
 	)
 
 	return true
