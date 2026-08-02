@@ -6,7 +6,7 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
-## [Unreleased]
+## [v0.0.10] — 2026-08-02
 
 - Debian packages are now built by GoReleaser's `nfpms` section instead of a
   separate workflow and hand-rolled `dpkg-deb` script
