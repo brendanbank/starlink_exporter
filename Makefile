@@ -49,16 +49,13 @@ build-linux-amd64-upx: build-linux-amd64
 build-linux-all-upx: build-linux-all
 	upx --best --lzma $(BINARY_NAME)_linux_amd64 $(BINARY_NAME)_linux_arm64 $(BINARY_NAME)_linux_arm
 
-# Debian packaging
+# Debian packaging (requires goreleaser). Packages land in dist/.
+# Releases are published by CI on tag push; this target is for local testing.
 build-deb:
-	@./scripts/build-deb.sh
-
-# Publish to GitHub Packages (requires gh CLI)
-publish-deb:
-	@./scripts/publish-deb.sh
+	goreleaser release --snapshot --clean --skip=publish
 
 clean:
 	rm -f $(BINARY_NAME) $(BINARY_NAME)_linux_* $(BINARY_NAME)_darwin_* $(BINARY_NAME)_windows_*
-	rm -rf build/
+	rm -rf build/ dist/
 
-.PHONY: all build build-linux-arm64 build-linux-amd64 build-linux-arm build-linux-all build-darwin-amd64 build-darwin-arm64 build-windows-amd64 build-all build-linux-arm64-upx build-linux-amd64-upx build-linux-all-upx build-deb publish-deb clean
+.PHONY: all build build-linux-arm64 build-linux-amd64 build-linux-arm build-linux-all build-darwin-amd64 build-darwin-arm64 build-windows-amd64 build-all build-linux-arm64-upx build-linux-amd64-upx build-linux-all-upx build-deb clean

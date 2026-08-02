@@ -21,6 +21,4 @@ case "$1" in
         ;;
 esac
 
-#DEBHELPER#
-
 exit 0

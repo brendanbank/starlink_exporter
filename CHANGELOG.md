@@ -6,6 +6,20 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
+## [Unreleased]
+
+- Debian packages are now built by GoReleaser's `nfpms` section instead of a
+  separate workflow and hand-rolled `dpkg-deb` script
+- Removed the `Build and Release Debian Packages` workflow, which raced the
+  GoReleaser run and failed to upload packages when GoReleaser took longer than
+  its fixed 30-second wait
+- Package files are now owned by `root:root`; previously everything except the
+  binary was installed owned by the CI runner's uid/gid
+- Packages now ship an `md5sums` control file, so `dpkg -V` can verify them
+- Removed the unused `debian/` debhelper configuration, which was never used by
+  the build, and `scripts/build-deb.sh` / `scripts/publish-deb.sh`
+- `make build-deb` now shells out to goreleaser and writes to `dist/`
+
 ## [v0.0.9] — 2026-08-02
 
 - Bumped `clarkzjw/starlink-grpc-golang` from `v1.0.20250818` to `v1.0.20260526` (dish protoset `2026.05.26.mr80668`), pulling in grpc `1.79.1` and protobuf `1.36.10`

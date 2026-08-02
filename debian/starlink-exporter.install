@@ -1,2 +1,0 @@
-starlink_exporter /usr/bin/
-starlink-exporter.service /lib/systemd/system/

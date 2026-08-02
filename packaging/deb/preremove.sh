@@ -3,12 +3,9 @@ set -e
 
 case "$1" in
     remove|deconfigure)
-        # Stop the service
         systemctl stop starlink-exporter.service || true
         systemctl disable starlink-exporter.service || true
         ;;
 esac
-
-#DEBHELPER#
 
 exit 0
