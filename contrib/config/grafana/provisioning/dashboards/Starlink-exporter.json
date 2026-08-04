@@ -1094,9 +1094,9 @@
           "placement": "bottom",
           "showLegend": false
         },
-        "mergeValues": false,
+        "mergeValues": true,
         "rowHeight": 0.8,
-        "showValue": "auto",
+        "showValue": "never",
         "tooltip": {
           "hideZeros": false,
           "maxHeight": 600,
@@ -1244,18 +1244,6 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "starlink_dish_alert_unexpected_location{device_id=\"$device_id\"}",
-          "instant": false,
-          "legendFormat": "Unexpected Location",
-          "range": true,
-          "refId": "N"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
           "expr": "starlink_dish_alert_low_motor_current{device_id=\"$device_id\"}",
           "instant": false,
           "legendFormat": "Low Motor Current",
@@ -1273,18 +1261,6 @@
           "legendFormat": "Lower signal than predicted",
           "range": true,
           "refId": "Q"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "starlink_dish_alert_mast_not_near_vertical{device_id=\"$device_id\"}",
-          "instant": false,
-          "legendFormat": "mast not near vertical",
-          "range": true,
-          "refId": "G"
         },
         {
           "datasource": {
@@ -3314,7 +3290,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "1 = NO_LIMIT, 2 = POLICY_LIMIT, 3 = USER_CUSTOM_LIMIT, 5 = OVERAGE_LIMIT, 6 = LOW_SPEED_POLICY_LIMIT.",
+      "description": "Whether Starlink is rate limiting the link. The reason is in the row label: NO_LIMIT, POLICY_LIMIT, USER_CUSTOM_LIMIT, OVERAGE_LIMIT or LOW_SPEED_POLICY_LIMIT.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3336,34 +3312,14 @@
             {
               "options": {
                 "0": {
-                  "color": "text",
+                  "color": "green",
                   "index": 0,
-                  "text": "UNKNOWN"
+                  "text": "Not restricted"
                 },
                 "1": {
-                  "color": "green",
-                  "index": 1,
-                  "text": "NO_LIMIT"
-                },
-                "2": {
                   "color": "orange",
-                  "index": 2,
-                  "text": "POLICY_LIMIT"
-                },
-                "3": {
-                  "color": "yellow",
-                  "index": 3,
-                  "text": "USER_CUSTOM_LIMIT"
-                },
-                "5": {
-                  "color": "red",
-                  "index": 4,
-                  "text": "OVERAGE_LIMIT"
-                },
-                "6": {
-                  "color": "red",
-                  "index": 5,
-                  "text": "LOW_SPEED_POLICY_LIMIT"
+                  "index": 1,
+                  "text": "Restricted"
                 }
               },
               "type": "value"
@@ -3377,12 +3333,11 @@
                 "value": 0
               },
               {
-                "color": "red",
+                "color": "orange",
                 "value": 1
               }
             ]
-          },
-          "unit": "none"
+          }
         },
         "overrides": []
       },
@@ -3402,7 +3357,7 @@
         },
         "mergeValues": true,
         "rowHeight": 0.8,
-        "showValue": "auto",
+        "showValue": "never",
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
@@ -3416,7 +3371,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "starlink_dish_dl_bandwidth_restricted_reason{device_id=\"$device_id\"}",
+          "expr": "starlink_dish_dl_bandwidth_restricted_reason{device_id=\"$device_id\"} != bool 1",
           "instant": false,
           "legendFormat": "Downlink: {{reason}}",
           "range": true,
@@ -3428,7 +3383,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "starlink_dish_ul_bandwidth_restricted_reason{device_id=\"$device_id\"}",
+          "expr": "starlink_dish_ul_bandwidth_restricted_reason{device_id=\"$device_id\"} != bool 1",
           "instant": false,
           "legendFormat": "Uplink: {{reason}}",
           "range": true,
@@ -3510,7 +3465,7 @@
         },
         "mergeValues": true,
         "rowHeight": 0.8,
-        "showValue": "auto",
+        "showValue": "never",
         "tooltip": {
           "hideZeros": false,
           "mode": "single",
