@@ -460,12 +460,14 @@ var (
 		[]string{"device_id"}, nil,
 	)
 	// dishObstructionMap
+	// The map itself rides in the data label as a base64 PNG. The collection
+	// time is the metric's value rather than a label: a label would mint a new
+	// series, and a new copy of that image, on every single scrape.
 	dishObstructionMap = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "dish", "obstruction_map"),
-		"Obstruction Map",
+		"Obstruction map as a base64 PNG in the data label, valued with the unix time it was collected",
 		[]string{
 			"device_id",
-			"timestamp",
 			"num_rows",
 			"num_cols",
 			// "min_elevation_deg",

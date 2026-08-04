@@ -777,13 +777,11 @@ func (e *Exporter) collectDishObstructionMap(ch chan<- prometheus.Metric) bool {
 		fmt.Printf("Failed to encode image: %s", err.Error())
 	}
 
-	timestamp := time.Now().Format(time.RFC3339)
 	b64 := base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	ch <- prometheus.MustNewConstMetric(
-		dishObstructionMap, prometheus.GaugeValue, 1.00,
+		dishObstructionMap, prometheus.GaugeValue, float64(time.Now().Unix()),
 		e.DishID,
-		timestamp,
 		fmt.Sprint(obstructionMap.GetNumRows()),
 		fmt.Sprint(obstructionMap.GetNumCols()),
 		fmt.Sprint(obstructionMap.GetMaxThetaDeg()),
