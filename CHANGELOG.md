@@ -44,17 +44,21 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
   still refers to metrics the exporter no longer emits
 - `contrib/docker-compose.yaml` installs `marcusolsson-dynamictext-panel`, which
   the obstruction map panel needs
+- **Removed** the public IP collector, the `/infrequentMetrics` endpoint and the
+  `starlink_dish_public_ip_pop` metric. Learning a public address means asking a
+  third party — the old collector shelled out to `curl` against `ifconfig.io`
+  and to `dig` for the PoP name — and the exporter should talk to the dish and
+  nothing else. The `IFACE` environment variable is gone with it
+- The dish scrape in `contrib/config/prometheus/prometheus.yml` moves from 3s to
+  20s, with the timeout raised from 3s to 10s
 - README corrections: the boresight difference metrics were documented under
   names that do not exist (`boresight_azimuth_deg_diff` rather than
   `boresight_azimuth_diff_deg`), `starlink_dish_power_supply_connected` was
   documented but has never been collected, and
   `starlink_dish_snr_above_noise_floor` was described as the inverse of what it
-  reports. The `/health` and `/infrequentMetrics` endpoints, the
-  `STARLINK_GRPC_ADDR_PORT` and `IFACE` environment variables, and the fact that
-  dishes now commonly refuse `GetLocation` are documented for the first time.
-  `starlink_dish_public_ip_pop` gets its own section: what each label is derived
-  from, that `dig` is an undeclared runtime dependency for the PoP labels, and
-  that the lookup has to egress through the dish to describe the dish.
+  reports. The `/health` endpoint, the
+  `STARLINK_GRPC_ADDR_PORT` environment variable, and the fact that dishes now
+  commonly refuse `GetLocation` are documented for the first time.
   Badges point at this fork rather than upstream, and the release table that
   stopped at v0.0.8 is replaced by a link to this file
 
