@@ -8,12 +8,15 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/status"
 
 	device "github.com/clarkzjw/starlink-grpc-golang/pkg/spacex.com/api/device"
 )
@@ -26,6 +29,10 @@ type Exporter struct {
 
 	DishID      string
 	CountryCode string
+
+	// locationDenied is set when the dish refuses GetLocation by policy, so
+	// the exporter stops asking on every scrape.
+	locationDenied bool
 }
 
 // New returns an initialized Exporter.
@@ -110,6 +117,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishGpsValid
 	ch <- dishGpsSats
 	ch <- dishPntFilterConvergenceState
+	ch <- dishGpsNoSatsAfterTtff
+	ch <- dishGpsInhibited
 
 	// DishLocation
 	ch <- dishLatitude
@@ -128,6 +137,43 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishEthSpeedMbps
 	ch <- dishSnrAboveNoiseFloor
 	ch <- dishSnrPersistentlyLow
+	ch <- dishDlBandwidthRestrictedReason
+	ch <- dishUlBandwidthRestrictedReason
+	ch <- dishRebootReason
+	ch <- dishSwupdateRebootReady
+	ch <- dishSoftwareUpdateProgress
+	ch <- dishSoftwareUpdateRequiresReboot
+	ch <- dishSecondsUntilSwupdateRebootPossible
+	ch <- dishIsCellDisabled
+	ch <- dishHasActuators
+	ch <- dishIsMovingFastPersisted
+	ch <- dishHighPowerTestMode
+	ch <- dishHasSignedCals
+	ch <- dishUserDebugModeEnabled
+	ch <- dishMacFlag
+	ch <- dishNatFlag
+	ch <- dishAccountShard
+	ch <- dishConnectedRouters
+	ch <- dishDownstreamRouters
+
+	// Power accessories
+	ch <- dishPlcReceiving
+	ch <- dishPlcStateOfCharge
+	ch <- dishPlcBatteryHealth
+	ch <- dishPlcThermalThrottleLevel
+	ch <- dishPlcSafetyModeActive
+	ch <- dishPlcPermanentFailure
+	ch <- dishPlcTimeToEmpty
+	ch <- dishPlcTimeToFull
+	ch <- dishPlcPortPower
+	ch <- dishBatteryStateOfCharge
+	ch <- dishBatteryIsCharging
+	ch <- dishBatteryPowerSource
+	ch <- dishUpsuDishPower
+	ch <- dishUpsuRouterPower
+	ch <- dishUpsuUptimeSeconds
+	ch <- dishApsDishPower
+	ch <- dishApsUptimeSeconds
 
 	// DishAlerts
 	ch <- dishPowerSupplyThermalThrottle
@@ -145,6 +191,11 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishInstallPending
 	ch <- dishIsHeating
 	ch <- dishNoEthernetLink
+	ch <- dishAlertDbfTelemStale
+	ch <- dishAlertDishWaterDetected
+	ch <- dishAlertRouterWaterDetected
+	ch <- dishAlertUpsuRouterPortSlow
+	ch <- dishSlowEthernetSpeeds100
 
 	// DishAlignment
 	ch <- dishAlignmentStats
@@ -161,8 +212,6 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- dishProlongedObstructionDurationSeconds
 	ch <- dishProlongedObstructionIntervalSeconds
 	ch <- dishProlongedObstructionValid
-	ch <- dishWedgeFractionObstructionRatio
-	ch <- dishWedgeAbsFractionObstructionRatio
 	ch <- dishObstructionMap
 
 	// DishLocation
@@ -170,24 +219,61 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 
 	// Diagnostics
 	ch <- dishGpsTimeS
+	ch <- dishHardwareSelfTest
+	ch <- dishHardwareSelfTestCode
+	ch <- dishStowed
+	ch <- dishOverageRateLimited
 
 	// Power
 	ch <- dishPowerWatt
 	ch <- dishPowerWattAvg15min
+
+	// History
+	ch <- dishHistorySamples
+	ch <- dishHistoryPopPingDropRateAvg
+	ch <- dishHistoryFullDropSeconds
+	ch <- dishHistoryPartialDropSeconds
+	ch <- dishHistoryLongestFullDropSeconds
+	ch <- dishHistoryPopPingLatencySecondsAvg
+	ch <- dishHistoryPopPingLatencySecondsMin
+	ch <- dishHistoryPopPingLatencySecondsMax
+	ch <- dishHistoryDownlinkBpsAvg
+	ch <- dishHistoryDownlinkBpsMax
+	ch <- dishHistoryUplinkBpsAvg
+	ch <- dishHistoryUplinkBpsMax
+	ch <- dishHistoryDownlinkBytes
+	ch <- dishHistoryUplinkBytes
+	ch <- dishHistoryPowerWattMin
+	ch <- dishHistoryPowerWattMax
+	ch <- dishHistoryOutageCount
+	ch <- dishHistoryOutageSeconds
+	ch <- dishHistoryOutageMaxSeconds
+	ch <- dishHistoryOutageSwitchCount
 }
 
 // Collect fetches the stats from Starlink dish and delivers them as Prometheus metrics.
 // It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	ok := e.collectDishStatus(ch)
-	ok = ok && e.collectDishLocation(ch)
-	ok = ok && e.collectDishObstructionStatus(ch)
-	ok = ok && e.collectDishObstructionMap(ch)
-	ok = ok && e.collectDishAlerts(ch)
-	ok = ok && e.collectDishConfig(ch)
-	ok = ok && e.collectAlignmentStats(ch)
-	ok = ok && e.collectDishDiagnostics(ch)
-	ok = ok && e.collectDishPower(ch)
+	ok := true
+
+	// Status, obstructions, alerts and alignment all come out of the same
+	// GetStatus response, so ask the dish for it once per scrape.
+	status, err := e.getStatus()
+	if err != nil {
+		log.Errorf("gRPC GetStatus failed: %s", err.Error())
+		ok = false
+	} else {
+		e.collectDishStatus(ch, status)
+		e.collectDishObstructionStatus(ch, status)
+		e.collectDishAlerts(ch, status)
+		e.collectAlignmentStats(ch, status)
+	}
+
+	ok = e.collectDishLocation(ch) && ok
+	ok = e.collectDishObstructionMap(ch) && ok
+	ok = e.collectDishConfig(ch) && ok
+	ok = e.collectDishDiagnostics(ch) && ok
+	ok = e.collectDishHistory(ch) && ok
 
 	if ok {
 		ch <- prometheus.MustNewConstMetric(
@@ -200,7 +286,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
+func (e *Exporter) getStatus() (*device.DishGetStatusResponse, error) {
 	req := &device.Request{
 		Request: &device.Request_GetStatus{},
 	}
@@ -209,11 +295,13 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	defer cancel()
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
-		return false
+		return nil, err
 	}
 
-	dishStatus := resp.GetDishGetStatus()
+	return resp.GetDishGetStatus(), nil
+}
+
+func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric, dishStatus *device.DishGetStatusResponse) {
 	dishI := dishStatus.GetDeviceInfo()
 	dishB := dishI.GetBoot()
 	dishS := dishStatus.GetDeviceState()
@@ -370,7 +458,153 @@ func (e *Exporter) collectDishStatus(ch chan<- prometheus.Metric) bool {
 	// ch <- prometheus.MustNewConstMetric(
 	// 	dishTemperateCenter, prometheus.GaugeValue, float64(dishStatus.GetTCenter()),
 	// )
-	return true
+
+	ch <- prometheus.MustNewConstMetric(
+		dishGpsNoSatsAfterTtff, prometheus.GaugeValue, flool(dishG.GetNoSatsAfterTtff()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishGpsInhibited, prometheus.GaugeValue, flool(dishG.GetInhibitGps()), e.DishID,
+	)
+
+	// Bandwidth restrictions: the enum value is 0 for NO_LIMIT, so the value is
+	// usable on its own and the label says why.
+	ch <- prometheus.MustNewConstMetric(
+		dishDlBandwidthRestrictedReason, prometheus.GaugeValue, float64(dishStatus.GetDlBandwidthRestrictedReason()),
+		e.DishID, dishStatus.GetDlBandwidthRestrictedReason().String(),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishUlBandwidthRestrictedReason, prometheus.GaugeValue, float64(dishStatus.GetUlBandwidthRestrictedReason()),
+		e.DishID, dishStatus.GetUlBandwidthRestrictedReason().String(),
+	)
+
+	swUpdate := dishStatus.GetSoftwareUpdateStats()
+	ch <- prometheus.MustNewConstMetric(
+		dishRebootReason, prometheus.GaugeValue, float64(dishStatus.GetRebootReason()),
+		e.DishID, dishStatus.GetRebootReason().String(),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSwupdateRebootReady, prometheus.GaugeValue, flool(dishStatus.GetSwupdateRebootReady()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSoftwareUpdateProgress, prometheus.GaugeValue, float64(swUpdate.GetSoftwareUpdateProgress()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSoftwareUpdateRequiresReboot, prometheus.GaugeValue, flool(swUpdate.GetUpdateRequiresReboot()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSecondsUntilSwupdateRebootPossible, prometheus.GaugeValue,
+		float64(dishStatus.GetSecondsUntilSwupdateRebootPossible()), e.DishID,
+	)
+
+	ch <- prometheus.MustNewConstMetric(
+		dishIsCellDisabled, prometheus.GaugeValue, flool(dishStatus.GetIsCellDisabled()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHasActuators, prometheus.GaugeValue, float64(dishStatus.GetHasActuators()),
+		e.DishID, dishStatus.GetHasActuators().String(),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishIsMovingFastPersisted, prometheus.GaugeValue, flool(dishStatus.GetIsMovingFastPersisted()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHighPowerTestMode, prometheus.GaugeValue, flool(dishStatus.GetHighPowerTestMode()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHasSignedCals, prometheus.GaugeValue, flool(dishStatus.GetHasSignedCals()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishUserDebugModeEnabled, prometheus.GaugeValue, flool(dishStatus.GetUserDebugModeEnabled()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishMacFlag, prometheus.GaugeValue, flool(dishStatus.GetMacFlag()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishNatFlag, prometheus.GaugeValue, float64(dishStatus.GetNatFlag()),
+		e.DishID, dishStatus.GetNatFlag().String(),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishAccountShard, prometheus.GaugeValue, float64(dishStatus.GetAccountShard()),
+		e.DishID, dishStatus.GetAccountShard().String(),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishConnectedRouters, prometheus.GaugeValue, float64(len(dishStatus.GetConnectedRouters())), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishDownstreamRouters, prometheus.GaugeValue, float64(len(dishStatus.GetDownstreamRouters())), e.DishID,
+	)
+
+	e.collectDishPowerAccessories(ch, dishStatus)
+}
+
+// collectDishPowerAccessories reports the PLC, battery and UPSU/APS telemetry.
+// Dishes without those accessories report zeroed structs.
+func (e *Exporter) collectDishPowerAccessories(ch chan<- prometheus.Metric, dishStatus *device.DishGetStatusResponse) {
+	plc := dishStatus.GetPlcStats()
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcReceiving, prometheus.GaugeValue, flool(plc.GetReceivingPlc()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcStateOfCharge, prometheus.GaugeValue, float64(plc.GetStateOfCharge()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcBatteryHealth, prometheus.GaugeValue, float64(plc.GetBatteryHealth()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcThermalThrottleLevel, prometheus.GaugeValue, float64(plc.GetThermalThrottleLevel()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcSafetyModeActive, prometheus.GaugeValue, flool(plc.GetSafetyModeActive()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcPermanentFailure, prometheus.GaugeValue, flool(plc.GetPermanentFailure()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcTimeToEmpty, prometheus.GaugeValue, float64(plc.GetAverageTimeToEmpty()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPlcTimeToFull, prometheus.GaugeValue, float64(plc.GetAverageTimeToFull()), e.DishID,
+	)
+	for port, stats := range map[string]*device.PLCPortStats{
+		"1": plc.GetPort_1Stats(),
+		"2": plc.GetPort_2Stats(),
+		"3": plc.GetPort_3Stats(),
+	} {
+		ch <- prometheus.MustNewConstMetric(
+			dishPlcPortPower, prometheus.GaugeValue, float64(stats.GetPower()),
+			e.DishID, port, stats.GetStatus().String(),
+		)
+	}
+
+	battery := dishStatus.GetBatteryStats()
+	ch <- prometheus.MustNewConstMetric(
+		dishBatteryStateOfCharge, prometheus.GaugeValue, float64(battery.GetStateOfCharge()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishBatteryIsCharging, prometheus.GaugeValue, flool(battery.GetIsCharging()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishBatteryPowerSource, prometheus.GaugeValue, float64(battery.GetPowerSource()),
+		e.DishID, battery.GetPowerSource().String(),
+	)
+
+	upsu := dishStatus.GetUpsuStats()
+	ch <- prometheus.MustNewConstMetric(
+		dishUpsuDishPower, prometheus.GaugeValue, float64(upsu.GetDishPower()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishUpsuRouterPower, prometheus.GaugeValue, float64(upsu.GetRouterPower()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishUpsuUptimeSeconds, prometheus.GaugeValue, float64(upsu.GetUptime()), e.DishID,
+	)
+
+	aps := dishStatus.GetApsStats()
+	ch <- prometheus.MustNewConstMetric(
+		dishApsDishPower, prometheus.GaugeValue, float64(aps.GetDishPower()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishApsUptimeSeconds, prometheus.GaugeValue, float64(aps.GetUptime()), e.DishID,
+	)
 }
 
 func (e *Exporter) collectDishConfig(ch chan<- prometheus.Metric) bool {
@@ -399,6 +633,10 @@ func (e *Exporter) collectDishConfig(ch chan<- prometheus.Metric) bool {
 }
 
 func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
+	if e.locationDenied {
+		return true
+	}
+
 	req := &device.Request{
 		Request: &device.Request_GetLocation{},
 	}
@@ -408,6 +646,13 @@ func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
 
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
+		// Location access is denied by policy in a growing number of regions.
+		// That is a permanent answer, so say so once and stop asking.
+		if status.Code(err) == codes.PermissionDenied {
+			log.Warnf("gRPC GetLocation denied, no location metrics will be exported: %s", err.Error())
+			e.locationDenied = true
+			return true
+		}
 		log.Errorf("gRPC GetLocation failed: %s", err.Error())
 		// don't return false since location service might not be enabled
 		return true
@@ -450,20 +695,8 @@ func (e *Exporter) collectDishLocation(ch chan<- prometheus.Metric) bool {
 	return true
 }
 
-func (e *Exporter) collectDishObstructionStatus(ch chan<- prometheus.Metric) bool {
-	req := &device.Request{
-		Request: &device.Request_GetStatus{},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-	resp, err := e.Client.Handle(ctx, req)
-	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
-		return false
-	}
-
-	obstructions := resp.GetDishGetStatus().GetObstructionStats()
+func (e *Exporter) collectDishObstructionStatus(ch chan<- prometheus.Metric, dishStatus *device.DishGetStatusResponse) {
+	obstructions := dishStatus.GetObstructionStats()
 
 	ch <- prometheus.MustNewConstMetric(
 		dishCurrentlyObstructed, prometheus.GaugeValue, flool(obstructions.GetCurrentlyObstructed()), e.DishID,
@@ -489,8 +722,6 @@ func (e *Exporter) collectDishObstructionStatus(ch chan<- prometheus.Metric) boo
 	ch <- prometheus.MustNewConstMetric(
 		dishProlongedObstructionValid, prometheus.GaugeValue, flool(obstructions.GetAvgProlongedObstructionValid()), e.DishID,
 	)
-
-	return true
 }
 
 func (e *Exporter) collectDishObstructionMap(ch chan<- prometheus.Metric) bool {
@@ -572,7 +803,7 @@ func (e *Exporter) collectDishDiagnostics(ch chan<- prometheus.Metric) bool {
 	defer cancel()
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
+		log.Errorf("gRPC GetDiagnostics failed: %s", err.Error())
 		return false
 	}
 
@@ -582,23 +813,28 @@ func (e *Exporter) collectDishDiagnostics(ch chan<- prometheus.Metric) bool {
 		dishGpsTimeS, prometheus.GaugeValue,
 		float64(diagnostics.GetLocation().GetGpsTimeS()), e.DishID,
 	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHardwareSelfTest, prometheus.GaugeValue, float64(diagnostics.GetHardwareSelfTest()),
+		e.DishID, diagnostics.GetHardwareSelfTest().String(),
+	)
+	for _, code := range diagnostics.GetHardwareSelfTestCodes() {
+		ch <- prometheus.MustNewConstMetric(
+			dishHardwareSelfTestCode, prometheus.GaugeValue, float64(code),
+			e.DishID, code.String(),
+		)
+	}
+	ch <- prometheus.MustNewConstMetric(
+		dishStowed, prometheus.GaugeValue, flool(diagnostics.GetStowed()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishOverageRateLimited, prometheus.GaugeValue, flool(diagnostics.GetOverageRateLimited()), e.DishID,
+	)
 
 	return true
 }
 
-func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
-	req := &device.Request{
-		Request: &device.Request_GetStatus{},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-	resp, err := e.Client.Handle(ctx, req)
-	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
-		return false
-	}
-	alerts := resp.GetDishGetStatus().GetAlerts()
+func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric, dishStatus *device.DishGetStatusResponse) {
+	alerts := dishStatus.GetAlerts()
 
 	ch <- prometheus.MustNewConstMetric(
 		dishAlertMotorsStuck, prometheus.GaugeValue, flool(alerts.GetMotorsStuck()), e.DishID,
@@ -651,23 +887,25 @@ func (e *Exporter) collectDishAlerts(ch chan<- prometheus.Metric) bool {
 	ch <- prometheus.MustNewConstMetric(
 		dishNoEthernetLink, prometheus.GaugeValue, flool(alerts.GetNoEthernetLink()), e.DishID,
 	)
-
-	return true
+	ch <- prometheus.MustNewConstMetric(
+		dishAlertDbfTelemStale, prometheus.GaugeValue, flool(alerts.GetDbfTelemStale()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishAlertDishWaterDetected, prometheus.GaugeValue, flool(alerts.GetDishWaterDetected()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishAlertRouterWaterDetected, prometheus.GaugeValue, flool(alerts.GetRouterWaterDetected()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishAlertUpsuRouterPortSlow, prometheus.GaugeValue, flool(alerts.GetUpsuRouterPortSlow()), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishSlowEthernetSpeeds100, prometheus.GaugeValue, flool(alerts.GetSlowEthernetSpeeds_100()), e.DishID,
+	)
 }
 
-func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric) bool {
-	req := &device.Request{
-		Request: &device.Request_GetStatus{},
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1)
-	defer cancel()
-	resp, err := e.Client.Handle(ctx, req)
-	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
-		return false
-	}
-	alignmentStats := resp.GetDishGetStatus().GetAlignmentStats()
+func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric, dishStatus *device.DishGetStatusResponse) {
+	alignmentStats := dishStatus.GetAlignmentStats()
 
 	ch <- prometheus.MustNewConstMetric(
 		dishAlignmentStats, prometheus.GaugeValue, 1.00,
@@ -696,11 +934,12 @@ func (e *Exporter) collectAlignmentStats(ch chan<- prometheus.Metric) bool {
 	ch <- prometheus.MustNewConstMetric(
 		dishTiltAngleDeg, prometheus.GaugeValue, float64(alignmentStats.GetTiltAngleDeg()), e.DishID,
 	)
-
-	return true
 }
 
-func (e *Exporter) collectDishPower(ch chan<- prometheus.Metric) bool {
+// collectDishHistory aggregates the per second ring buffers the dish keeps for
+// the last ~15 minutes. Scraping only reads the instantaneous status values, so
+// without this everything that happens between two scrapes is invisible.
+func (e *Exporter) collectDishHistory(ch chan<- prometheus.Metric) bool {
 	req := &device.Request{
 		Request: &device.Request_GetHistory{},
 	}
@@ -709,26 +948,201 @@ func (e *Exporter) collectDishPower(ch chan<- prometheus.Metric) bool {
 	defer cancel()
 	resp, err := e.Client.Handle(ctx, req)
 	if err != nil {
-		log.Errorf("gRPC GetStatus failed: %s", err.Error())
+		log.Errorf("gRPC GetHistory failed: %s", err.Error())
 		return false
 	}
 	history := resp.GetDishGetHistory()
 	powerHistory := history.GetPowerIn()
 
-	latest_range, _, _ := computeSampleRange(history, 1)
-	latest_index := latest_range[0]
-	ch <- prometheus.MustNewConstMetric(
-		dishPowerWatt, prometheus.GaugeValue, float64(powerHistory[latest_index]), e.DishID,
-	)
-	avg := 0.0
-	for i := 0; i < len(powerHistory); i++ {
-		avg += float64(powerHistory[i])
+	sampleRange, _, _ := computeSampleRange(history, -1)
+	if len(sampleRange) == 0 {
+		log.Warn("gRPC GetHistory returned no samples")
+		return true
 	}
-	avg /= float64(len(powerHistory))
+
+	latestRange, _, _ := computeSampleRange(history, 1)
+	if len(latestRange) > 0 && len(powerHistory) > 0 {
+		ch <- prometheus.MustNewConstMetric(
+			dishPowerWatt, prometheus.GaugeValue, float64(powerHistory[latestRange[0]]), e.DishID,
+		)
+	}
+
 	ch <- prometheus.MustNewConstMetric(
-		dishPowerWattAvg15min, prometheus.GaugeValue, avg, e.DishID,
+		dishHistorySamples, prometheus.GaugeValue, float64(len(sampleRange)), e.DishID,
 	)
+
+	dropRate := history.GetPopPingDropRate()
+	latency := history.GetPopPingLatencyMs()
+	downlink := history.GetDownlinkThroughputBps()
+	uplink := history.GetUplinkThroughputBps()
+
+	var (
+		dropSum, dlSum, ulSum, powerSum    float64
+		latencySum                         float64
+		latencySamples                     int
+		fullDrop, partialDrop              int
+		currentDropRun, longestDropRun     int
+		dlMax, ulMax, latencyMax, powerMax float64
+		latencyMin, powerMin               = math.Inf(1), math.Inf(1)
+		samples                            = len(sampleRange)
+	)
+
+	for _, i := range sampleRange {
+		if i < len(dropRate) {
+			drop := float64(dropRate[i])
+			dropSum += drop
+			switch {
+			case drop >= 1:
+				fullDrop++
+				currentDropRun++
+				if currentDropRun > longestDropRun {
+					longestDropRun = currentDropRun
+				}
+			case drop > 0:
+				partialDrop++
+				currentDropRun = 0
+			default:
+				currentDropRun = 0
+			}
+
+			// Latency during a fully dropped second is not meaningful.
+			if drop < 1 && i < len(latency) {
+				l := float64(latency[i])
+				latencySum += l
+				latencySamples++
+				if l > latencyMax {
+					latencyMax = l
+				}
+				if l < latencyMin {
+					latencyMin = l
+				}
+			}
+		}
+		if i < len(downlink) {
+			d := float64(downlink[i])
+			dlSum += d
+			if d > dlMax {
+				dlMax = d
+			}
+		}
+		if i < len(uplink) {
+			u := float64(uplink[i])
+			ulSum += u
+			if u > ulMax {
+				ulMax = u
+			}
+		}
+		if i < len(powerHistory) {
+			p := float64(powerHistory[i])
+			powerSum += p
+			if p > powerMax {
+				powerMax = p
+			}
+			if p < powerMin {
+				powerMin = p
+			}
+		}
+	}
+
+	if math.IsInf(latencyMin, 1) {
+		latencyMin = 0
+	}
+	if math.IsInf(powerMin, 1) {
+		powerMin = 0
+	}
+	latencyAvg := 0.0
+	if latencySamples > 0 {
+		latencyAvg = latencySum / float64(latencySamples)
+	}
+
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPopPingDropRateAvg, prometheus.GaugeValue, dropSum/float64(samples), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryFullDropSeconds, prometheus.GaugeValue, float64(fullDrop), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPartialDropSeconds, prometheus.GaugeValue, float64(partialDrop), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryLongestFullDropSeconds, prometheus.GaugeValue, float64(longestDropRun), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPopPingLatencySecondsAvg, prometheus.GaugeValue, latencyAvg/1000, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPopPingLatencySecondsMin, prometheus.GaugeValue, latencyMin/1000, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPopPingLatencySecondsMax, prometheus.GaugeValue, latencyMax/1000, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryDownlinkBpsAvg, prometheus.GaugeValue, dlSum/float64(samples), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryDownlinkBpsMax, prometheus.GaugeValue, dlMax, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryUplinkBpsAvg, prometheus.GaugeValue, ulSum/float64(samples), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryUplinkBpsMax, prometheus.GaugeValue, ulMax, e.DishID,
+	)
+	// Samples are one second apart, so the sum of the rates is the volume.
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryDownlinkBytes, prometheus.GaugeValue, dlSum/8, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryUplinkBytes, prometheus.GaugeValue, ulSum/8, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishPowerWattAvg15min, prometheus.GaugeValue, powerSum/float64(samples), e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPowerWattMin, prometheus.GaugeValue, powerMin, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryPowerWattMax, prometheus.GaugeValue, powerMax, e.DishID,
+	)
+
+	e.collectHistoryOutages(ch, history)
+
 	return true
+}
+
+func (e *Exporter) collectHistoryOutages(ch chan<- prometheus.Metric, history *device.DishGetHistoryResponse) {
+	count := map[string]int{}
+	duration := map[string]float64{}
+	maxDuration := 0.0
+	switched := 0
+
+	for _, outage := range history.GetOutages() {
+		cause := outage.GetCause().String()
+		seconds := float64(outage.GetDurationNs()) / float64(time.Second)
+		count[cause]++
+		duration[cause] += seconds
+		if seconds > maxDuration {
+			maxDuration = seconds
+		}
+		if outage.GetDidSwitch() {
+			switched++
+		}
+	}
+
+	for cause, n := range count {
+		ch <- prometheus.MustNewConstMetric(
+			dishHistoryOutageCount, prometheus.GaugeValue, float64(n), e.DishID, cause,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			dishHistoryOutageSeconds, prometheus.GaugeValue, duration[cause], e.DishID, cause,
+		)
+	}
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryOutageMaxSeconds, prometheus.GaugeValue, maxDuration, e.DishID,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		dishHistoryOutageSwitchCount, prometheus.GaugeValue, float64(switched), e.DishID,
+	)
 }
 
 func flool(b bool) float64 {
@@ -749,6 +1163,16 @@ func computeSampleRange(history *device.DishGetHistoryResponse, parseSamples int
 	// Adjust parseSamples if needed
 	if parseSamples < 0 || samples < parseSamples {
 		parseSamples = samples
+	}
+
+	// A dish that booted less than a full buffer ago has not filled the ring
+	// yet; asking for more samples than it has produced would wrap into
+	// negative offsets.
+	if uint64(parseSamples) > history.GetCurrent() {
+		parseSamples = int(history.GetCurrent())
+	}
+	if parseSamples <= 0 {
+		return []int{}, 0, current
 	}
 
 	// Calculate start position

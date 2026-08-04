@@ -99,12 +99,47 @@ The following metrics have been added on top of upstream:
 
 **Alerts**
 - `starlink_dish_alert_no_ethernet_link` — no ethernet link detected
+- `starlink_dish_alert_slow_eth_speeds_100` — ethernet negotiated at 100Mbps or below
+- `starlink_dish_alert_dbf_telem_stale` — digital beamforming telemetry is stale
+- `starlink_dish_alert_dish_water_detected` / `starlink_dish_alert_router_water_detected` — water ingress
+- `starlink_dish_alert_upsu_router_port_slow` — UPSU router port below expected link speed
 
 **Dish Status**
 - `starlink_dish_initialization_duration_seconds` — time taken to initialize the dish
 - `starlink_dish_power_supply_connected` — power supply connectivity status
 - Additional obstruction detail metrics
 - Quaternion orientation values (ned2dish)
+- `starlink_dish_dl_bandwidth_restricted_reason` / `starlink_dish_ul_bandwidth_restricted_reason` — why the dish is rate limited (`1` NO_LIMIT, `2` POLICY_LIMIT, `3` USER_CUSTOM_LIMIT, `5` OVERAGE_LIMIT, `6` LOW_SPEED_POLICY_LIMIT), with the name in a `reason` label
+- `starlink_dish_reboot_reason`, `starlink_dish_swupdate_reboot_ready`, `starlink_dish_software_update_progress`, `starlink_dish_software_update_requires_reboot`, `starlink_dish_seconds_until_swupdate_reboot_possible`
+- `starlink_dish_is_cell_disabled`, `starlink_dish_has_actuators`, `starlink_dish_is_moving_fast_persisted`, `starlink_dish_high_power_test_mode`, `starlink_dish_has_signed_cals`, `starlink_dish_user_debug_mode_enabled`, `starlink_dish_mac_flag`, `starlink_dish_nat_flag`, `starlink_dish_account_shard`
+- `starlink_dish_connected_routers` / `starlink_dish_downstream_routers` — router counts
+- `starlink_dish_gps_no_sats_after_ttff`, `starlink_dish_gps_inhibited`
+
+**Power Accessories**
+- `starlink_dish_plc_*` — PLC accessory state of charge, battery health, thermal throttle level, safety mode, per-port power
+- `starlink_dish_battery_state_of_charge`, `starlink_dish_battery_is_charging`, `starlink_dish_battery_power_source`
+- `starlink_dish_upsu_dish_power_watt`, `starlink_dish_upsu_router_power_watt`, `starlink_dish_upsu_uptime_seconds`, `starlink_dish_aps_dish_power_watt`, `starlink_dish_aps_uptime_seconds`
+
+**Diagnostics**
+- `starlink_dish_hardware_self_test` — self test result, with the name in a `result` label
+- `starlink_dish_hardware_self_test_code` — one series per reported failure code
+- `starlink_dish_stowed` — dish is stowed
+- `starlink_dish_overage_rate_limited` — rate limited because the data allowance was exceeded
+
+**History**
+
+The dish keeps ~15 minutes of per second samples. Scraping only reads instantaneous
+values, so anything that happens between two scrapes is invisible; these metrics
+aggregate the whole buffer on every scrape.
+
+- `starlink_dish_history_samples` — samples aggregated
+- `starlink_dish_history_pop_ping_drop_rate_avg`, `starlink_dish_history_full_drop_seconds`, `starlink_dish_history_partial_drop_seconds`, `starlink_dish_history_longest_full_drop_seconds`
+- `starlink_dish_history_pop_ping_latency_seconds_avg` / `_min` / `_max` — fully dropped seconds excluded
+- `starlink_dish_history_downlink_throughput_bps_avg` / `_max`, `starlink_dish_history_uplink_throughput_bps_avg` / `_max`
+- `starlink_dish_history_downlink_bytes`, `starlink_dish_history_uplink_bytes` — volume over the window
+- `starlink_dish_history_power_watt_min` / `_max`
+- `starlink_dish_history_outage_count` / `starlink_dish_history_outage_seconds` — per outage `cause`
+- `starlink_dish_history_outage_max_seconds`, `starlink_dish_history_outage_switch_count`
 
 **Device ID Label**
 

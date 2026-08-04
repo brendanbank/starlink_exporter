@@ -6,6 +6,37 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
+## [Unreleased]
+
+- New Prometheus metrics for dish data the exporter fetched but discarded:
+  - History aggregates from `GetHistory` (`starlink_dish_history_*`): ping drop
+    seconds, latency min/mean/max, throughput mean/peak, bytes transferred,
+    power min/max, and outage count/duration per cause. Only `PowerIn` was used
+    before, so 15 minutes of per second samples were thrown away on every scrape
+  - Bandwidth restriction reasons (`dl`/`ul_bandwidth_restricted_reason`),
+    software update state (`reboot_reason`, `swupdate_reboot_ready`,
+    `software_update_progress`, `software_update_requires_reboot`,
+    `seconds_until_swupdate_reboot_possible`) and device flags
+    (`is_cell_disabled`, `has_actuators`, `is_moving_fast_persisted`,
+    `high_power_test_mode`, `has_signed_cals`, `user_debug_mode_enabled`,
+    `mac_flag`, `nat_flag`, `account_shard`, `connected_routers`,
+    `downstream_routers`)
+  - PLC, battery, UPSU and APS power accessory telemetry
+  - Diagnostics beyond GPS time: `hardware_self_test`,
+    `hardware_self_test_code`, `stowed`, `overage_rate_limited`
+  - Alerts: `dbf_telem_stale`, `dish_water_detected`, `router_water_detected`,
+    `upsu_router_port_slow`, `slow_eth_speeds_100`
+  - GPS: `gps_no_sats_after_ttff`, `gps_inhibited`
+- `GetStatus` is now requested once per scrape instead of four times; the status,
+  obstruction, alert and alignment collectors share one response
+- Removed `starlink_dish_wedge_fraction_obstruction_ratio` and
+  `starlink_dish_wedge_abs_fraction_obstruction_ratio`, which were described but
+  never collected, so they never appeared in `/metrics`
+- `computeSampleRange` no longer returns negative ring buffer offsets when the
+  dish has been up for less than a full history buffer
+- `GetLocation` denial by policy is now logged once and location collection is
+  disabled, instead of logging an error on every scrape
+
 ## [v0.0.10] — 2026-08-02
 
 - Debian packages are now built by GoReleaser's `nfpms` section instead of a
