@@ -51,6 +51,13 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
   nothing else. The `IFACE` environment variable is gone with it
 - The dish scrape in `contrib/config/prometheus/prometheus.yml` moves from 3s to
   20s, with the timeout raised from 3s to 10s
+- `starlink_dish_obstruction_map` no longer stamps every scrape with a new
+  timestamp label. Each distinct label set is a new series carrying its own copy
+  of the base64 encoded map, which produced around 4,300 series per dish per
+  day. The `timestamp` label is replaced by `generated`, which only advances
+  when the rendered map differs from the previous scrape's, and the metric's
+  value is now the unix time it was collected. The obstruction map panel draws
+  one image per series, so this is also what made it render several maps at once
 - README corrections: the boresight difference metrics were documented under
   names that do not exist (`boresight_azimuth_deg_diff` rather than
   `boresight_azimuth_diff_deg`), `starlink_dish_power_supply_connected` was

@@ -1500,7 +1500,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Sky view from the dish (red = obstructed, white = clear, black = outside the field of view). PNG is rendered by starlink_exporter and shipped in the `data` label of starlink_dish_obstruction_map as a base64 data URI.",
+      "description": "Newest obstruction map only. The caption time is when the map last changed, not when it was scraped.",
       "gridPos": {
         "h": 20,
         "w": 8,
@@ -1510,7 +1510,7 @@
       "id": 30,
       "options": {
         "afterRender": "",
-        "content": "<div class=\"obstruction\">\n  <img class=\"obstruction__map\" src=\"{{{data}}}\" alt=\"Starlink dish obstruction map\" />\n  <div class=\"obstruction__meta\">\n    {{num_rows}}&times;{{num_cols}} &middot; max &theta; {{max_theta_deg}}&deg; &middot; {{reference_frame}}<br />\n    {{timestamp}}\n  </div>\n</div>",
+        "content": "<div class=\"obstruction\">\n  <img class=\"obstruction__map\" src=\"{{{data}}}\" alt=\"Starlink dish obstruction map\" />\n  <div class=\"obstruction__meta\">\n    {{num_rows}}&times;{{num_cols}} &middot; max &theta; {{max_theta_deg}}&deg; &middot; {{reference_frame}}<br />\n    {{generated}}\n  </div>\n</div>",
         "contentPartials": [],
         "defaultContent": "No obstruction map reported for this dish.",
         "editor": {
@@ -1535,7 +1535,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "starlink_dish_obstruction_map{device_id=\"$device_id\"}",
+          "expr": "topk(1, starlink_dish_obstruction_map{device_id=\"$device_id\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
