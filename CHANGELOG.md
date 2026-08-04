@@ -36,6 +36,14 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
   dish has been up for less than a full history buffer
 - `GetLocation` denial by policy is now logged once and location collection is
   disabled, instead of logging an error on every scrape
+- New provisioned Grafana dashboard, `contrib/config/grafana/provisioning/dashboards/Starlink-exporter.json`,
+  covering the metrics above: outages and reliability, throughput history,
+  service state, obstruction detail and pointing/GPS. It selects its Prometheus
+  datasource through a `datasource` variable, so it can be provisioned or
+  imported into any Grafana. The older `Starlink.json` still ships unchanged and
+  still refers to metrics the exporter no longer emits
+- `contrib/docker-compose.yaml` installs `marcusolsson-dynamictext-panel`, which
+  the obstruction map panel needs
 
 ## [v0.0.10] — 2026-08-02
 
