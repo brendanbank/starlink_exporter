@@ -179,6 +179,8 @@ A state directory `/var/lib/starlink-exporter` is created on install and removed
 
 ## Grafana Dashboard
 
+Provisioned from `contrib/config/grafana/provisioning/dashboards/Starlink-exporter.json`.
+
 <p align="center">
-	<img src="https://github.com/clarkzjw/starlink_exporter/raw/main/static/Screenshot.jpeg" width="95%">
+	<img src="static/Screenshot.png" width="95%">
 </p>
