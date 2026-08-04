@@ -6,7 +6,7 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
-## [Unreleased]
+## [v0.0.11] — 2026-08-04
 
 - New Prometheus metrics for dish data the exporter fetched but discarded:
   - History aggregates from `GetHistory` (`starlink_dish_history_*`): ping drop
