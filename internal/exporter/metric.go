@@ -468,6 +468,7 @@ var (
 		"Obstruction map as a base64 PNG in the data label, valued with the unix time it was collected",
 		[]string{
 			"device_id",
+			"generated",
 			"num_rows",
 			"num_cols",
 			// "min_elevation_deg",

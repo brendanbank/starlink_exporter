@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"image/png"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,6 +34,12 @@ type Exporter struct {
 	// locationDenied is set when the dish refuses GetLocation by policy, so
 	// the exporter stops asking on every scrape.
 	locationDenied bool
+
+	// The obstruction map only gets a new timestamp when the image itself
+	// changes; concurrent scrapes can reach this at the same time.
+	mapMu            sync.Mutex
+	lastMapData      string
+	lastMapGenerated string
 }
 
 // New returns an initialized Exporter.
@@ -782,6 +789,7 @@ func (e *Exporter) collectDishObstructionMap(ch chan<- prometheus.Metric) bool {
 	ch <- prometheus.MustNewConstMetric(
 		dishObstructionMap, prometheus.GaugeValue, float64(time.Now().Unix()),
 		e.DishID,
+		e.mapGeneratedAt(b64),
 		fmt.Sprint(obstructionMap.GetNumRows()),
 		fmt.Sprint(obstructionMap.GetNumCols()),
 		fmt.Sprint(obstructionMap.GetMaxThetaDeg()),
@@ -790,6 +798,21 @@ func (e *Exporter) collectDishObstructionMap(ch chan<- prometheus.Metric) bool {
 	)
 
 	return true
+}
+
+// mapGeneratedAt returns when the dish last produced a different obstruction
+// map. Stamping every scrape instead would change the label set each time, and
+// each new label set carries another copy of the image.
+func (e *Exporter) mapGeneratedAt(data string) string {
+	e.mapMu.Lock()
+	defer e.mapMu.Unlock()
+
+	if data != e.lastMapData {
+		e.lastMapData = data
+		e.lastMapGenerated = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	return e.lastMapGenerated
 }
 
 func (e *Exporter) collectDishDiagnostics(ch chan<- prometheus.Metric) bool {
