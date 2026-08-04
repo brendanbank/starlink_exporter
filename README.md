@@ -74,9 +74,47 @@ compose stack in [`contrib/`](contrib/) use it.
 | Path | Serves |
 | --- | --- |
 | `/metrics` | dish metrics, scraped continuously |
-| `/infrequentMetrics` | `starlink_dish_public_ip_pop`, the dish's public IPv4/IPv6 address and PoP codes. Requires the `IFACE` environment variable naming the interface facing the dish; without it the endpoint returns nothing. It shells out to `curl` against an external service, so scrape it rarely (hourly is plenty) and from a separate job |
+| `/infrequentMetrics` | `starlink_dish_public_ip_pop` — see below. It shells out to `curl` and `dig` against external services, so scrape it rarely (hourly is plenty) and from a separate job |
 | `/health` | gRPC connection state to the dish: `200` idle or ready, `503` connecting or failed, `500` shut down |
 | `/` | links to the above |
+
+#### Public IP and PoP code
+
+`starlink_dish_public_ip_pop` is a gauge that is always `1`; the information is
+in its labels:
+
+| Label | From |
+| --- | --- |
+| `public_ipv4` / `public_ipv6` | `curl --interface $IFACE https://ifconfig.io`, run once per scrape for each address family |
+| `pop_code_ipv4` / `pop_code_ipv6` | `dig -x` on each address, matched against `customer.<pop>.pop.starlinkisp.net` |
+
+Two things decide whether the labels are meaningful:
+
+- **`dig` must be installed** (`bind9-dnsutils` on Debian/Ubuntu). It is not a
+  package dependency. Without it the PoP labels stay empty.
+- **The request has to leave through the dish.** `IFACE` names the interface
+  `curl` binds to; if it is unset, the lookup follows the host's default route.
+  On a host whose default route is some other connection, the reported address
+  is that connection's, not Starlink's, and the PoP labels stay empty because
+  the PTR record does not match the Starlink pattern. Binding to an interface
+  only helps if a route to the internet exists through it, so this endpoint is
+  really for exporter hosts sitting behind the dish.
+
+```bash
+curl -s localhost:9817/infrequentMetrics
+```
+
+To collect it, give it its own Prometheus job rather than adding it to the
+existing one:
+
+```yaml
+  - job_name: 'starlink-public-ip'
+    metrics_path: /infrequentMetrics
+    scrape_interval: 1h
+    scrape_timeout: 30s
+    static_configs:
+      - targets: ['starlink_exporter:9817']
+```
 
 ### Service management
 

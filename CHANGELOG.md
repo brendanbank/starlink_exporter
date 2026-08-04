@@ -52,6 +52,9 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
   reports. The `/health` and `/infrequentMetrics` endpoints, the
   `STARLINK_GRPC_ADDR_PORT` and `IFACE` environment variables, and the fact that
   dishes now commonly refuse `GetLocation` are documented for the first time.
+  `starlink_dish_public_ip_pop` gets its own section: what each label is derived
+  from, that `dig` is an undeclared runtime dependency for the PoP labels, and
+  that the lookup has to egress through the dish to describe the dish.
   Badges point at this fork rather than upstream, and the release table that
   stopped at v0.0.8 is replaced by a link to this file
 
