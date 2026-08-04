@@ -44,6 +44,16 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
   still refers to metrics the exporter no longer emits
 - `contrib/docker-compose.yaml` installs `marcusolsson-dynamictext-panel`, which
   the obstruction map panel needs
+- README corrections: the boresight difference metrics were documented under
+  names that do not exist (`boresight_azimuth_deg_diff` rather than
+  `boresight_azimuth_diff_deg`), `starlink_dish_power_supply_connected` was
+  documented but has never been collected, and
+  `starlink_dish_snr_above_noise_floor` was described as the inverse of what it
+  reports. The `/health` and `/infrequentMetrics` endpoints, the
+  `STARLINK_GRPC_ADDR_PORT` and `IFACE` environment variables, and the fact that
+  dishes now commonly refuse `GetLocation` are documented for the first time.
+  Badges point at this fork rather than upstream, and the release table that
+  stopped at v0.0.8 is replaced by a link to this file
 
 ## [v0.0.10] — 2026-08-02
 

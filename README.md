@@ -8,10 +8,10 @@ A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated 
 
 This is a fork of [clarkzjw/starlink_exporter](https://github.com/clarkzjw/starlink_exporter) with Debian packaging, security hardening, and additional metrics.
 
-[![build](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml)
-[![License](https://img.shields.io/github/license/clarkzjw/starlink_exporter)](/LICENSE)
+[![build](https://github.com/brendanbank/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/brendanbank/starlink_exporter/actions/workflows/build.yaml)
+[![License](https://img.shields.io/github/license/brendanbank/starlink_exporter)](/LICENSE)
 [![Release](https://img.shields.io/github/release/brendanbank/starlink_exporter.svg)](https://github.com/brendanbank/starlink_exporter/releases/latest)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/clarkzjw/starlink_exporter)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/brendanbank/starlink_exporter)
 
 Original repositories:
 
@@ -65,6 +65,19 @@ Usage of ./starlink_exporter:
         listening port to expose metrics on (default "9817")
 ```
 
+The dish address can also be set with the `STARLINK_GRPC_ADDR_PORT` environment
+variable, which takes precedence over `-address`. The container image and the
+compose stack in [`contrib/`](contrib/) use it.
+
+### Endpoints
+
+| Path | Serves |
+| --- | --- |
+| `/metrics` | dish metrics, scraped continuously |
+| `/infrequentMetrics` | `starlink_dish_public_ip_pop`, the dish's public IPv4/IPv6 address and PoP codes. Requires the `IFACE` environment variable naming the interface facing the dish; without it the endpoint returns nothing. It shells out to `curl` against an external service, so scrape it rarely (hourly is plenty) and from a separate job |
+| `/health` | gRPC connection state to the dish: `200` idle or ready, `503` connecting or failed, `500` shut down |
+| `/` | links to the above |
+
 ### Service management
 
 ```bash
@@ -85,13 +98,16 @@ The following metrics have been added on top of upstream:
 - `starlink_dish_longitude` — dish longitude (degrees)
 - `starlink_dish_altitude` — dish altitude (meters)
 
+Dishes increasingly refuse `GetLocation` by policy, in which case none of these
+are exported. The exporter logs the refusal once and stops asking.
+
 **Alignment**
-- `starlink_dish_boresight_azimuth_deg_diff` — difference between desired and actual boresight azimuth
-- `starlink_dish_boresight_elevation_deg_diff` — difference between desired and actual boresight elevation
+- `starlink_dish_boresight_azimuth_diff_deg` — difference between desired and actual boresight azimuth
+- `starlink_dish_boresight_elevation_diff_deg` — difference between desired and actual boresight elevation
 - `starlink_dish_tilt_angle_deg` — dish tilt angle
 
 **Signal Quality**
-- `starlink_dish_snr_above_noise_floor` — whether SNR is above the noise floor
+- `starlink_dish_snr_above_noise_floor` — despite the name, `1` means the SNR is **below** the noise floor, i.e. a signal problem. The name is inherited from upstream
 - `starlink_dish_snr_persistently_low` — whether SNR is persistently low
 
 **GPS**
@@ -106,7 +122,6 @@ The following metrics have been added on top of upstream:
 
 **Dish Status**
 - `starlink_dish_initialization_duration_seconds` — time taken to initialize the dish
-- `starlink_dish_power_supply_connected` — power supply connectivity status
 - Additional obstruction detail metrics
 - Quaternion orientation values (ned2dish)
 - `starlink_dish_dl_bandwidth_restricted_reason` / `starlink_dish_ul_bandwidth_restricted_reason` — why the dish is rate limited (`1` NO_LIMIT, `2` POLICY_LIMIT, `3` USER_CUSTOM_LIMIT, `5` OVERAGE_LIMIT, `6` LOW_SPEED_POLICY_LIMIT), with the name in a `reason` label
@@ -161,19 +176,13 @@ A state directory `/var/lib/starlink-exporter` is created on install and removed
 - `Makefile` updated for cross-compilation targeting Linux, macOS, and Windows (amd64, arm64, armhf)
 - Optional UPX compression for binary size reduction
 - Docker image building and Docker Hub publishing removed; releases are binary archives + `.deb` only
-- GitHub Actions workflow builds and attaches `.deb` packages to the GoReleaser release
+- GoReleaser builds the `.deb` packages through its `nfpms` section, in the same run that publishes the release
 
 ---
 
 ## Release History
 
-| Version | Key Changes |
-|---------|-------------|
-| v0.0.8  | Auto-enable and start service on `.deb` install |
-| v0.0.6/v0.0.7 | Dedicated system user, systemd security hardening |
-| v0.0.3  | Docker build removed from GoReleaser |
-| v0.0.1/v0.0.2 | Initial Debian packaging, cross-compilation Makefile, service file |
-| (pre-tag) | New metrics: location, alignment, SNR, device ID label |
+See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
