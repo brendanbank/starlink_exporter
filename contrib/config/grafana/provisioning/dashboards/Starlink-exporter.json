@@ -3443,7 +3443,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "",
+      "description": "Each row is a problem indicator: green is healthy, red needs attention.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -3461,7 +3461,23 @@
             "lineWidth": 0,
             "spanNulls": false
           },
-          "mappings": [],
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "OK"
+                },
+                "1": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Problem"
+                }
+              },
+              "type": "value"
+            }
+          ],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -3474,8 +3490,7 @@
                 "value": 1
               }
             ]
-          },
-          "unit": "bool"
+          }
         },
         "overrides": []
       },
@@ -3569,9 +3584,9 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "starlink_dish_gps_valid{device_id=\"$device_id\"}",
+          "expr": "starlink_dish_gps_valid{device_id=\"$device_id\"} == bool 0",
           "instant": false,
-          "legendFormat": "GPS valid",
+          "legendFormat": "GPS invalid",
           "range": true,
           "refId": "F"
         },
