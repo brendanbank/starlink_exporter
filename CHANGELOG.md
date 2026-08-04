@@ -6,6 +6,69 @@ Upstream changes from [clarkzjw/starlink_exporter](https://github.com/clarkzjw/s
 
 ---
 
+## [v0.0.11] — 2026-08-04
+
+- New Prometheus metrics for dish data the exporter fetched but discarded:
+  - History aggregates from `GetHistory` (`starlink_dish_history_*`): ping drop
+    seconds, latency min/mean/max, throughput mean/peak, bytes transferred,
+    power min/max, and outage count/duration per cause. Only `PowerIn` was used
+    before, so 15 minutes of per second samples were thrown away on every scrape
+  - Bandwidth restriction reasons (`dl`/`ul_bandwidth_restricted_reason`),
+    software update state (`reboot_reason`, `swupdate_reboot_ready`,
+    `software_update_progress`, `software_update_requires_reboot`,
+    `seconds_until_swupdate_reboot_possible`) and device flags
+    (`is_cell_disabled`, `has_actuators`, `is_moving_fast_persisted`,
+    `high_power_test_mode`, `has_signed_cals`, `user_debug_mode_enabled`,
+    `mac_flag`, `nat_flag`, `account_shard`, `connected_routers`,
+    `downstream_routers`)
+  - PLC, battery, UPSU and APS power accessory telemetry
+  - Diagnostics beyond GPS time: `hardware_self_test`,
+    `hardware_self_test_code`, `stowed`, `overage_rate_limited`
+  - Alerts: `dbf_telem_stale`, `dish_water_detected`, `router_water_detected`,
+    `upsu_router_port_slow`, `slow_eth_speeds_100`
+  - GPS: `gps_no_sats_after_ttff`, `gps_inhibited`
+- `GetStatus` is now requested once per scrape instead of four times; the status,
+  obstruction, alert and alignment collectors share one response
+- Removed `starlink_dish_wedge_fraction_obstruction_ratio` and
+  `starlink_dish_wedge_abs_fraction_obstruction_ratio`, which were described but
+  never collected, so they never appeared in `/metrics`
+- `computeSampleRange` no longer returns negative ring buffer offsets when the
+  dish has been up for less than a full history buffer
+- `GetLocation` denial by policy is now logged once and location collection is
+  disabled, instead of logging an error on every scrape
+- New provisioned Grafana dashboard, `contrib/config/grafana/provisioning/dashboards/Starlink-exporter.json`,
+  covering the metrics above: outages and reliability, throughput history,
+  service state, obstruction detail and pointing/GPS. It selects its Prometheus
+  datasource through a `datasource` variable, so it can be provisioned or
+  imported into any Grafana. The older `Starlink.json` still ships unchanged and
+  still refers to metrics the exporter no longer emits
+- `contrib/docker-compose.yaml` installs `marcusolsson-dynamictext-panel`, which
+  the obstruction map panel needs
+- **Removed** the public IP collector, the `/infrequentMetrics` endpoint and the
+  `starlink_dish_public_ip_pop` metric. Learning a public address means asking a
+  third party — the old collector shelled out to `curl` against `ifconfig.io`
+  and to `dig` for the PoP name — and the exporter should talk to the dish and
+  nothing else. The `IFACE` environment variable is gone with it
+- The dish scrape in `contrib/config/prometheus/prometheus.yml` moves from 3s to
+  20s, with the timeout raised from 3s to 10s
+- `starlink_dish_obstruction_map` no longer stamps every scrape with a new
+  timestamp label. Each distinct label set is a new series carrying its own copy
+  of the base64 encoded map, which produced around 4,300 series per dish per
+  day. The `timestamp` label is replaced by `generated`, which only advances
+  when the rendered map differs from the previous scrape's, and the metric's
+  value is now the unix time it was collected. The obstruction map panel draws
+  one image per series, so this is also what made it render several maps at once
+- README corrections: the boresight difference metrics were documented under
+  names that do not exist (`boresight_azimuth_deg_diff` rather than
+  `boresight_azimuth_diff_deg`), `starlink_dish_power_supply_connected` was
+  documented but has never been collected, and
+  `starlink_dish_snr_above_noise_floor` was described as the inverse of what it
+  reports. The `/health` endpoint, the
+  `STARLINK_GRPC_ADDR_PORT` environment variable, and the fact that dishes now
+  commonly refuse `GetLocation` are documented for the first time.
+  Badges point at this fork rather than upstream, and the release table that
+  stopped at v0.0.8 is replaced by a link to this file
+
 ## [v0.0.10] — 2026-08-02
 
 - Debian packages are now built by GoReleaser's `nfpms` section instead of a

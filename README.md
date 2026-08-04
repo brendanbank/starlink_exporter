@@ -8,10 +8,10 @@ A [Starlink](https://www.starlink.com/) exporter for Prometheus. Not affiliated 
 
 This is a fork of [clarkzjw/starlink_exporter](https://github.com/clarkzjw/starlink_exporter) with Debian packaging, security hardening, and additional metrics.
 
-[![build](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/clarkzjw/starlink_exporter/actions/workflows/build.yaml)
-[![License](https://img.shields.io/github/license/clarkzjw/starlink_exporter)](/LICENSE)
+[![build](https://github.com/brendanbank/starlink_exporter/actions/workflows/build.yaml/badge.svg)](https://github.com/brendanbank/starlink_exporter/actions/workflows/build.yaml)
+[![License](https://img.shields.io/github/license/brendanbank/starlink_exporter)](/LICENSE)
 [![Release](https://img.shields.io/github/release/brendanbank/starlink_exporter.svg)](https://github.com/brendanbank/starlink_exporter/releases/latest)
-![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/clarkzjw/starlink_exporter)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/brendanbank/starlink_exporter)
 
 Original repositories:
 
@@ -65,6 +65,21 @@ Usage of ./starlink_exporter:
         listening port to expose metrics on (default "9817")
 ```
 
+The dish address can also be set with the `STARLINK_GRPC_ADDR_PORT` environment
+variable, which takes precedence over `-address`. The container image and the
+compose stack in [`contrib/`](contrib/) use it.
+
+### Endpoints
+
+| Path | Serves |
+| --- | --- |
+| `/metrics` | all dish metrics |
+| `/health` | gRPC connection state to the dish: `200` idle or ready, `503` connecting or failed, `500` shut down |
+| `/` | links to the above |
+
+The exporter talks to the dish and to nothing else. It makes no outbound
+requests to the internet.
+
 ### Service management
 
 ```bash
@@ -85,13 +100,16 @@ The following metrics have been added on top of upstream:
 - `starlink_dish_longitude` — dish longitude (degrees)
 - `starlink_dish_altitude` — dish altitude (meters)
 
+Dishes increasingly refuse `GetLocation` by policy, in which case none of these
+are exported. The exporter logs the refusal once and stops asking.
+
 **Alignment**
-- `starlink_dish_boresight_azimuth_deg_diff` — difference between desired and actual boresight azimuth
-- `starlink_dish_boresight_elevation_deg_diff` — difference between desired and actual boresight elevation
+- `starlink_dish_boresight_azimuth_diff_deg` — difference between desired and actual boresight azimuth
+- `starlink_dish_boresight_elevation_diff_deg` — difference between desired and actual boresight elevation
 - `starlink_dish_tilt_angle_deg` — dish tilt angle
 
 **Signal Quality**
-- `starlink_dish_snr_above_noise_floor` — whether SNR is above the noise floor
+- `starlink_dish_snr_above_noise_floor` — despite the name, `1` means the SNR is **below** the noise floor, i.e. a signal problem. The name is inherited from upstream
 - `starlink_dish_snr_persistently_low` — whether SNR is persistently low
 
 **GPS**
@@ -99,12 +117,46 @@ The following metrics have been added on top of upstream:
 
 **Alerts**
 - `starlink_dish_alert_no_ethernet_link` — no ethernet link detected
+- `starlink_dish_alert_slow_eth_speeds_100` — ethernet negotiated at 100Mbps or below
+- `starlink_dish_alert_dbf_telem_stale` — digital beamforming telemetry is stale
+- `starlink_dish_alert_dish_water_detected` / `starlink_dish_alert_router_water_detected` — water ingress
+- `starlink_dish_alert_upsu_router_port_slow` — UPSU router port below expected link speed
 
 **Dish Status**
 - `starlink_dish_initialization_duration_seconds` — time taken to initialize the dish
-- `starlink_dish_power_supply_connected` — power supply connectivity status
 - Additional obstruction detail metrics
 - Quaternion orientation values (ned2dish)
+- `starlink_dish_dl_bandwidth_restricted_reason` / `starlink_dish_ul_bandwidth_restricted_reason` — why the dish is rate limited (`1` NO_LIMIT, `2` POLICY_LIMIT, `3` USER_CUSTOM_LIMIT, `5` OVERAGE_LIMIT, `6` LOW_SPEED_POLICY_LIMIT), with the name in a `reason` label
+- `starlink_dish_reboot_reason`, `starlink_dish_swupdate_reboot_ready`, `starlink_dish_software_update_progress`, `starlink_dish_software_update_requires_reboot`, `starlink_dish_seconds_until_swupdate_reboot_possible`
+- `starlink_dish_is_cell_disabled`, `starlink_dish_has_actuators`, `starlink_dish_is_moving_fast_persisted`, `starlink_dish_high_power_test_mode`, `starlink_dish_has_signed_cals`, `starlink_dish_user_debug_mode_enabled`, `starlink_dish_mac_flag`, `starlink_dish_nat_flag`, `starlink_dish_account_shard`
+- `starlink_dish_connected_routers` / `starlink_dish_downstream_routers` — router counts
+- `starlink_dish_gps_no_sats_after_ttff`, `starlink_dish_gps_inhibited`
+
+**Power Accessories**
+- `starlink_dish_plc_*` — PLC accessory state of charge, battery health, thermal throttle level, safety mode, per-port power
+- `starlink_dish_battery_state_of_charge`, `starlink_dish_battery_is_charging`, `starlink_dish_battery_power_source`
+- `starlink_dish_upsu_dish_power_watt`, `starlink_dish_upsu_router_power_watt`, `starlink_dish_upsu_uptime_seconds`, `starlink_dish_aps_dish_power_watt`, `starlink_dish_aps_uptime_seconds`
+
+**Diagnostics**
+- `starlink_dish_hardware_self_test` — self test result, with the name in a `result` label
+- `starlink_dish_hardware_self_test_code` — one series per reported failure code
+- `starlink_dish_stowed` — dish is stowed
+- `starlink_dish_overage_rate_limited` — rate limited because the data allowance was exceeded
+
+**History**
+
+The dish keeps ~15 minutes of per second samples. Scraping only reads instantaneous
+values, so anything that happens between two scrapes is invisible; these metrics
+aggregate the whole buffer on every scrape.
+
+- `starlink_dish_history_samples` — samples aggregated
+- `starlink_dish_history_pop_ping_drop_rate_avg`, `starlink_dish_history_full_drop_seconds`, `starlink_dish_history_partial_drop_seconds`, `starlink_dish_history_longest_full_drop_seconds`
+- `starlink_dish_history_pop_ping_latency_seconds_avg` / `_min` / `_max` — fully dropped seconds excluded
+- `starlink_dish_history_downlink_throughput_bps_avg` / `_max`, `starlink_dish_history_uplink_throughput_bps_avg` / `_max`
+- `starlink_dish_history_downlink_bytes`, `starlink_dish_history_uplink_bytes` — volume over the window
+- `starlink_dish_history_power_watt_min` / `_max`
+- `starlink_dish_history_outage_count` / `starlink_dish_history_outage_seconds` — per outage `cause`
+- `starlink_dish_history_outage_max_seconds`, `starlink_dish_history_outage_switch_count`
 
 **Device ID Label**
 
@@ -126,24 +178,20 @@ A state directory `/var/lib/starlink-exporter` is created on install and removed
 - `Makefile` updated for cross-compilation targeting Linux, macOS, and Windows (amd64, arm64, armhf)
 - Optional UPX compression for binary size reduction
 - Docker image building and Docker Hub publishing removed; releases are binary archives + `.deb` only
-- GitHub Actions workflow builds and attaches `.deb` packages to the GoReleaser release
+- GoReleaser builds the `.deb` packages through its `nfpms` section, in the same run that publishes the release
 
 ---
 
 ## Release History
 
-| Version | Key Changes |
-|---------|-------------|
-| v0.0.8  | Auto-enable and start service on `.deb` install |
-| v0.0.6/v0.0.7 | Dedicated system user, systemd security hardening |
-| v0.0.3  | Docker build removed from GoReleaser |
-| v0.0.1/v0.0.2 | Initial Debian packaging, cross-compilation Makefile, service file |
-| (pre-tag) | New metrics: location, alignment, SNR, device ID label |
+See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
 ## Grafana Dashboard
 
+Provisioned from `contrib/config/grafana/provisioning/dashboards/Starlink-exporter.json`.
+
 <p align="center">
-	<img src="https://github.com/clarkzjw/starlink_exporter/raw/main/static/Screenshot.jpeg" width="95%">
+	<img src="static/Screenshot.png" width="95%">
 </p>

@@ -9,3 +9,4 @@ build/
 make.sh
 .idea/
 .dccache
+.DS_Store
